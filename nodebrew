@@ -91,7 +91,7 @@ Usage:
 
 Example:
     nodebrew install v0.6.0     Install a specific version number
-    nodebrew use v0.6.0         Use the latest available 0.2.x release
+    nodebrew use v0.6.0         Use a specific version number
 ...
 }
 
