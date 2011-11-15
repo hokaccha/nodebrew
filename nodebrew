@@ -1,42 +1,11 @@
 #!/usr/bin/env perl
 
 # nodebrew
+# Node.js version manager
 #
-# Install:
-#
-# 1. このスクリプトをダウンロードして実行権限つけてパスが通ってるところにおく
-# 2. 以下にパスを通す
-# $HOME/.nodebrew/current/bin
-#
-#
-# $ curl -O https://raw.github.com/gist/1362193/69210fb4f1e6dcface6b20069f9374ec0146c306/nodebrew
-# $ chmod +x nodebrew
-# $ mv nodebrew /path/to/bin
-# $ export PATH=$HOME/.nodebrew/current/bin:$PATH
-#
-#
-# Example:
-# 
-# $ nodebrew install v0.6.0
-# install ...
-#
-# $ nodebrew use v0.6.0
-# $ node -v
-# v0.6.0
-#
-# $ nodebrew install v0.4.0
-# install ...
-#
-# $ nodebrew use v0.4.0
-# $ node -v
-# v0.4.0
-#
-# $ nodebrew list
-# v0.4.0
-# v0.6.0
-# 
-# current: v0.4.0
-#
+# @author  Kazuhito Hokamura <k.hokamura@gmail.com>
+# @url     https://github.com/hokaccha/nodebrew
+# @version 0.1.0
 
 use strict;
 use warnings;
