@@ -1,0 +1,134 @@
+#!/usr/bin/env perl
+
+# nodebrew
+#
+# Install:
+#
+# 1. このスクリプトをダウンロードして実行権限つけてパスが通ってるところにおく
+# 2. 以下にパスを通す
+# $HOME/.nodebrew/current/bin
+#
+#
+# $ curl -O https://raw.github.com/gist/1362193/69210fb4f1e6dcface6b20069f9374ec0146c306/nodebrew
+# $ chmod +x nodebrew
+# $ mv nodebrew /path/to/bin
+# $ export PATH=$HOME/.nodebrew/current/bin:$PATH
+#
+#
+# Example:
+# 
+# $ nodebrew install v0.6.0
+# install ...
+#
+# $ nodebrew use v0.6.0
+# $ node -v
+# v0.6.0
+#
+# $ nodebrew install v0.4.0
+# install ...
+#
+# $ nodebrew use v0.4.0
+# $ node -v
+# v0.4.0
+#
+# $ nodebrew list
+# v0.4.0
+# v0.6.0
+# 
+# current: v0.4.0
+#
+
+use strict;
+use warnings;
+use File::Path qw/rmtree/;
+
+my $cmd = $ARGV[0] || 'help';
+my $version = $ARGV[1];
+my @cmds = qw/use install uninstall list/;
+my $brew_dir = $ENV{HOME} . '/.nodebrew';
+my $src_dir = $brew_dir . '/src';
+my $node_dir = $brew_dir . '/node';
+my $current = $brew_dir . '/current';
+
+mkdir $brew_dir unless -e $brew_dir;
+mkdir $src_dir unless -e $src_dir;
+mkdir $node_dir unless -e $node_dir;
+
+sub cmd_use {
+    my $target = "$node_dir/$version";
+    return print "$version is not installed\n" unless -e $target;
+    unlink $current if -e $current;
+    symlink $target, $current;
+    print "use $version\n";
+}
+
+sub cmd_install {
+    return print "$version is already installed\n" if -e "$node_dir/$version";
+
+    my @tarballs = (
+        "http://nodejs.org/dist/$version/node-$version.tar.gz",
+        "http://nodejs.org/dist/node-$version.tar.gz",
+    );
+    my $tarball = '';
+    for (@tarballs) {
+        $tarball = $_ if qx[curl -Is "$_" | grep '200 OK'];
+    }
+    return print "$version is not found\n" unless $tarball;
+
+    unlink "$src_dir/node-$version.tar.gz";
+    rmtree "$src_dir/node-$version";
+    print "fetch: $tarball\n";
+
+    system qq[
+        cd "$src_dir" &&
+        curl -C - --progress-bar $tarball -o "node-$version.tar.gz" &&
+        tar -xzf "node-$version.tar.gz" &&
+        cd "node-$version" &&
+        ./configure --prefix="$node_dir/$version" &&
+        make &&
+        make install
+    ];
+}
+
+sub cmd_uninstall {
+    my $target = "$node_dir/$version";
+    return print "$version is not installed\n" unless -e $target;
+    rmtree $target;
+    print "$version uninstalled\n";
+}
+
+sub cmd_list {
+    opendir my $dh, $node_dir or die $!;
+    while (my $dir = readdir $dh) {
+        print "$dir\n" unless $dir =~ '^\.\.?$';
+    }
+
+    my $current_version = readlink $current || 'none';
+    $current_version =~ s!$node_dir/!!;
+    print "\ncurrent: $current_version\n";
+}
+
+sub cmd_help {
+    print <<'...';
+Node Version Manager
+
+Usage:
+    nodebrew help                    Show this message
+    nodebrew install <version>       Download and install a <version>
+    nodebrew uninstall <version>     Uninstall a version
+    nodebrew use <version>           Modify PATH to use <version>
+    nodebrew list                    List installed versions
+
+Example:
+    nodebrew install v0.6.0     Install a specific version number
+    nodebrew use v0.6.0         Use the latest available 0.2.x release
+...
+}
+
+if (0 == scalar grep { $_ eq $cmd } @cmds) {
+    cmd_help();
+}
+else {
+    no strict 'refs';
+    *{'cmd_' . $cmd}->();
+}
