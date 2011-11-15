@@ -11,6 +11,7 @@ use strict;
 use warnings;
 use File::Path qw/rmtree/;
 
+our $VERSION = '0.1.0';
 my $cmd = $ARGV[0] || 'help';
 my $version = $ARGV[1];
 my @cmds = qw/use install uninstall list/;
@@ -78,8 +79,8 @@ sub cmd_list {
 }
 
 sub cmd_help {
-    print <<'...';
-Node Version Manager
+    print <<"...";
+nodebrew $VERSION
 
 Usage:
     nodebrew help                    Show this message
