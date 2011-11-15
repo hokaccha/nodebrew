@@ -1,6 +1,6 @@
 # nodebrew
 
-Node.js package manager.
+Node.js version manager.
 
 ## Install
 
