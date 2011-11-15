@@ -4,9 +4,9 @@ Node.js package manager.
 
 ## Install
 
-    $ curl -O https://raw.github.com/gist/1362193/69210fb4f1e6dcface6b20069f9374ec0146c306/nodebrew
+    $ cd /path/to/bin
+    $ curl -O https://raw.github.com/hokaccha/nodebrew/master/nodebrew
     $ chmod +x nodebrew
-    $ mv nodebrew /path/to/bin
     $ export PATH=$HOME/.nodebrew/current/bin:$PATH
 
 ## Example
