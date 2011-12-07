@@ -22,7 +22,7 @@ my $current = $brew_dir . '/current';
 print $brew_dir, "\n";
 
 # check curl or wget
-my $hascurl = `which cur`;
+my $hascurl = `which curl`;
 my $haswget = `which wget`;
 if (!$hascurl && !$haswget) {
     die 'Need curl or wget';
