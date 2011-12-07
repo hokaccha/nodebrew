@@ -84,8 +84,12 @@ sub cmd_install {
 
 sub cmd_uninstall {
     my $target = "$node_dir/$version";
+    my $current_version = get_current_version();
     return print "$version is not installed\n" unless -e $target;
     rmtree $target;
+    if ($current_version eq $version) {
+        use_default();
+    }
     print "$version uninstalled\n";
 }
 
@@ -95,9 +99,7 @@ sub cmd_list {
         print "$dir\n" unless $dir =~ '^\.\.?$';
     }
 
-    my $current_version = readlink $current;
-    $current_version =~ m!^$node_dir/(.+)!;
-    print "\ncurrent: " . ($1 || 'none') . "\n";
+    print "\ncurrent: " . get_current_version() . "\n";
 }
 
 sub cmd_ls {
@@ -139,6 +141,12 @@ Example:
 sub use_default {
     unlink $current if -l $current;
     symlink $default_dir, $current;
+}
+
+sub get_current_version {
+    my $current_version = readlink $current;
+    $current_version =~ m!^$node_dir/(.+)!;
+    return $1 || 'none';
 }
 
 if (0 == scalar grep { $_ eq $cmd } @cmds) {
