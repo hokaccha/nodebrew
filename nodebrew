@@ -35,7 +35,7 @@ mkdir $node_dir unless -e $node_dir;
 sub cmd_use {
     my $target = "$node_dir/$version";
     return print "$version is not installed\n" unless -e $target;
-    unlink $current if -e $current;
+    unlink $current if -l $current;
     symlink $target, $current;
     print "use $version\n";
 }
