@@ -15,10 +15,11 @@ our $VERSION = '0.1.0';
 my $cmd = $ARGV[0] || 'help';
 my $version = $ARGV[1];
 my @cmds = qw/use install uninstall list ls/;
-my $brew_dir = $ENV{HOME} . '/.nodebrew';
+my $brew_dir = $ENV{NODEBREW_HOME} || $ENV{HOME} . '/.nodebrew';
 my $src_dir = $brew_dir . '/src';
 my $node_dir = $brew_dir . '/node';
 my $current = $brew_dir . '/current';
+print $brew_dir, "\n";
 
 # check curl or wget
 my $hascurl = `which cur`;
