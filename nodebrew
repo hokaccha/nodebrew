@@ -20,6 +20,13 @@ my $src_dir = $brew_dir . '/src';
 my $node_dir = $brew_dir . '/node';
 my $current = $brew_dir . '/current';
 
+# check curl or wget
+my $hascurl = `which cur`;
+my $haswget = `which wget`;
+if (!$hascurl && !$haswget) {
+    die 'Need curl or wget';
+}
+
 mkdir $brew_dir unless -e $brew_dir;
 mkdir $src_dir unless -e $src_dir;
 mkdir $node_dir unless -e $node_dir;
@@ -40,8 +47,12 @@ sub cmd_install {
         "http://nodejs.org/dist/node-$version.tar.gz",
     );
     my $tarball = '';
+    my $check_cmd = $hascurl ? 'curl -Is' : 'wget -Sq --spider';
     for (@tarballs) {
-        $tarball = $_ if qx[curl -Is "$_" | grep '200 OK'];
+        if (qx[$check_cmd "$_" 2>&1 | grep '200 OK']) {
+            $tarball = $_;
+            last;
+        }
     }
     return print "$version is not found\n" unless $tarball;
 
@@ -49,15 +60,23 @@ sub cmd_install {
     rmtree "$src_dir/node-$version";
     print "fetch: $tarball\n";
 
-    system qq[
+    my $fetch_cmd = $hascurl
+        ? "curl -C - --progress-bar $tarball -o"
+        : "wget -c $tarball -O";
+    my $install_cmd = qq[
         cd "$src_dir" &&
-        curl -C - --progress-bar $tarball -o "node-$version.tar.gz" &&
+        $fetch_cmd "node-$version.tar.gz" &&
         tar -xzf "node-$version.tar.gz" &&
         cd "node-$version" &&
         ./configure --prefix="$node_dir/$version" &&
         make &&
         make install
     ];
+
+    # for debug
+    # print $install_cmd;
+
+    system $install_cmd;
 }
 
 sub cmd_uninstall {
