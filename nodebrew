@@ -10,16 +10,17 @@
 use strict;
 use warnings;
 use File::Path qw/rmtree/;
+use File::Copy qw/copy/;
 
 our $VERSION = '0.1.0';
 my $cmd = $ARGV[0] || 'help';
 my $version = $ARGV[1];
-my @cmds = qw/use install uninstall list ls/;
+my @cmds = qw/use install uninstall list ls selfinstall/;
 my $brew_dir = $ENV{NODEBREW_HOME} || $ENV{HOME} . '/.nodebrew';
 my $src_dir = $brew_dir . '/src';
 my $node_dir = $brew_dir . '/node';
 my $current = $brew_dir . '/current';
-print $brew_dir, "\n";
+my $default_dir = $brew_dir . '/default';
 
 # check curl or wget
 my $hascurl = `which curl`;
@@ -31,6 +32,7 @@ if (!$hascurl && !$haswget) {
 mkdir $brew_dir unless -e $brew_dir;
 mkdir $src_dir unless -e $src_dir;
 mkdir $node_dir unless -e $node_dir;
+mkdir $default_dir unless -e $default_dir;
 
 sub cmd_use {
     my $target = "$node_dir/$version";
@@ -93,13 +95,26 @@ sub cmd_list {
         print "$dir\n" unless $dir =~ '^\.\.?$';
     }
 
-    my $current_version = readlink $current || 'none';
-    $current_version =~ s!$node_dir/!!;
-    print "\ncurrent: $current_version\n";
+    my $current_version = readlink $current;
+    $current_version =~ m!^$node_dir/(.+)!;
+    print "\ncurrent: " . ($1 || 'none') . "\n";
 }
 
 sub cmd_ls {
     cmd_list();
+}
+
+sub cmd_selfinstall {
+    my $from = $0;
+    my $to = "$brew_dir/nodebrew";
+    copy($from, $to) or die "$@";
+    chmod 0755, $to;
+
+    mkdir "$default_dir/bin" unless -e "$default_dir/bin";
+    if (! -e "$default_dir/bin/nodebrew") {
+        symlink $to, "$default_dir/bin/nodebrew";
+    }
+    use_default();
 }
 
 sub cmd_help {
@@ -113,11 +128,17 @@ Usage:
     nodebrew use <version>           Modify PATH to use <version>
     nodebrew list                    List installed versions
     nodebrew ls                      Alias list
+    nodebrew selfinstall             Install nodebrew self
 
 Example:
     nodebrew install v0.6.0     Install a specific version number
     nodebrew use v0.6.0         Use a specific version number
 ...
+}
+
+sub use_default {
+    unlink $current if -l $current;
+    symlink $default_dir, $current;
 }
 
 if (0 == scalar grep { $_ eq $cmd } @cmds) {
