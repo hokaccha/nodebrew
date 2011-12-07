@@ -14,7 +14,7 @@ use File::Path qw/rmtree/;
 our $VERSION = '0.1.0';
 my $cmd = $ARGV[0] || 'help';
 my $version = $ARGV[1];
-my @cmds = qw/use install uninstall list/;
+my @cmds = qw/use install uninstall list ls/;
 my $brew_dir = $ENV{HOME} . '/.nodebrew';
 my $src_dir = $brew_dir . '/src';
 my $node_dir = $brew_dir . '/node';
@@ -97,6 +97,10 @@ sub cmd_list {
     print "\ncurrent: $current_version\n";
 }
 
+sub cmd_ls {
+    cmd_list();
+}
+
 sub cmd_help {
     print <<"...";
 nodebrew $VERSION
@@ -107,6 +111,7 @@ Usage:
     nodebrew uninstall <version>     Uninstall a version
     nodebrew use <version>           Modify PATH to use <version>
     nodebrew list                    List installed versions
+    nodebrew ls                      Alias list
 
 Example:
     nodebrew install v0.6.0     Install a specific version number
