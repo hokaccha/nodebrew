@@ -15,7 +15,7 @@ use File::Copy qw/copy/;
 our $VERSION = '0.1.0';
 my $cmd = $ARGV[0] || 'help';
 my $version = $ARGV[1];
-my @cmds = qw/use install uninstall list ls/;
+my @cmds = qw/use install uninstall list ls setup/;
 my $brew_dir = $ENV{NODEBREW_HOME} || $ENV{HOME} . '/.nodebrew';
 my $src_dir = $brew_dir . '/src';
 my $node_dir = $brew_dir . '/node';
@@ -28,11 +28,6 @@ my $haswget = `which wget`;
 if (!$hascurl && !$haswget) {
     die 'Need curl or wget';
 }
-
-mkdir $brew_dir unless -e $brew_dir;
-mkdir $src_dir unless -e $src_dir;
-mkdir $node_dir unless -e $node_dir;
-mkdir $default_dir unless -e $default_dir;
 
 sub cmd_use {
     my $target = "$node_dir/$version";
@@ -52,9 +47,8 @@ sub cmd_install {
         "http://nodejs.org/dist/node-$version.tar.gz",
     );
     my $tarball = '';
-    my $check_cmd = $hascurl ? 'curl -Is' : 'wget -Sq --spider';
     for (@tarballs) {
-        if (qx[$check_cmd "$_" 2>&1 | grep '200 OK']) {
+        if (check_url($_)) {
             $tarball = $_;
             last;
         }
@@ -108,6 +102,28 @@ sub cmd_ls {
     cmd_list();
 }
 
+sub cmd_setup {
+    mkdir $brew_dir;
+    mkdir $src_dir;
+    mkdir $node_dir;
+    mkdir $default_dir;
+    mkdir "$default_dir/bin";
+
+    my $nodebrew_path = "$brew_dir/nodebrew";
+    my $nodebrew_source = fetch_nodebrew();
+    die "Error: fetch nodebrew faild.\n" unless $nodebrew_source;
+
+    open my $fh, '>', $nodebrew_path or die "Error: $!";
+    print $fh $nodebrew_source;
+    `chmod +x $nodebrew_path`;
+
+    symlink $nodebrew_path, "$default_dir/bin/nodebrew";
+    use_default() if get_current_version() eq 'none';
+
+    print "install nodebrew in $brew_dir\n\n";
+    print "Add your \$PATH: $node_dir/current/bin\n";
+}
+
 sub cmd_help {
     print <<"...";
 nodebrew $VERSION
@@ -119,6 +135,7 @@ Usage:
     nodebrew use <version>           Modify PATH to use <version>
     nodebrew list                    List installed versions
     nodebrew ls                      Alias list
+    nodebrew setup                   Install nodebrew
 
 Example:
     nodebrew install v0.6.0     Install a specific version number
@@ -132,9 +149,24 @@ sub use_default {
 }
 
 sub get_current_version {
+    return 'none' unless -l $current;
     my $current_version = readlink $current;
     $current_version =~ m!^$node_dir/(.+)!;
     return $1 || 'none';
+}
+
+sub fetch_nodebrew {
+    my $fetch_url = 'https://raw.github.com/hokaccha/nodebrew/master/nodebrew';
+    my $fetch_cmd = $hascurl ? "curl -s $fetch_url" : "wget -q $fetch_url -O -";
+    return unless check_url($fetch_url);
+    print "fetching nodebrew...\n";
+    return `$fetch_cmd`;
+}
+
+sub check_url {
+    my $url = shift;
+    my $check_cmd = $hascurl ? 'curl -Is' : 'wget -Sq --spider';
+    return `$check_cmd "$url" 2>&1 | grep '200 OK'`;
 }
 
 if (0 == scalar grep { $_ eq $cmd } @cmds) {
