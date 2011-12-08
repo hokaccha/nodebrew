@@ -5,14 +5,14 @@
 #
 # @author  Kazuhito Hokamura <k.hokamura@gmail.com>
 # @url     https://github.com/hokaccha/nodebrew
-# @version 0.1.0
+# @version 0.2.0
 
 use strict;
 use warnings;
 use File::Path qw/rmtree/;
 use File::Copy qw/copy/;
 
-our $VERSION = '0.1.0';
+our $VERSION = '0.2.0';
 my $cmd = $ARGV[0] || 'help';
 my $version = $ARGV[1];
 my @cmds = qw/use install uninstall list ls setup selfupdate/;
