@@ -32,7 +32,7 @@ if (!$hascurl && !$haswget) {
 }
 
 # check brew home
-if (!-e $brew_dir) {
+if (!-e $brew_dir && $cmd ne 'setup') {
     die "Error: $brew_dir not exeist.\nExecute command `nodebrew setup`\n";
 }
 
@@ -120,7 +120,7 @@ sub cmd_setup {
     use_default() if get_current_version() eq 'none';
 
     print "install nodebrew in $brew_dir\n\n";
-    print "Add your \$PATH: $node_dir/current/bin\n";
+    print "Add your \$PATH: $brew_dir/current/bin\n";
 }
 
 sub cmd_selfupdate {
