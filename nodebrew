@@ -77,9 +77,6 @@ sub cmd_install {
         make install
     ];
 
-    # for debug
-    # print $install_cmd;
-
     system $install_cmd;
 }
 
