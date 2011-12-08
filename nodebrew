@@ -29,6 +29,11 @@ if (!$hascurl && !$haswget) {
     die 'Need curl or wget';
 }
 
+# check brew home
+if (!-e $brew_dir) {
+    die "Error: $brew_dir not exeist.\nExecute command `nodebrew setup`\n";
+}
+
 sub cmd_use {
     my $target = "$node_dir/$version";
     my $nodebrew = "$target/bin/nodebrew";
