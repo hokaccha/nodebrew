@@ -15,7 +15,7 @@ use File::Copy qw/copy/;
 our $VERSION = '0.1.0';
 my $cmd = $ARGV[0] || 'help';
 my $version = $ARGV[1];
-my @cmds = qw/use install uninstall list ls setup/;
+my @cmds = qw/use install uninstall list ls setup selfupdate/;
 my $brew_dir = $ENV{NODEBREW_HOME} || $ENV{HOME} . '/.nodebrew';
 my $src_dir = $brew_dir . '/src';
 my $node_dir = $brew_dir . '/node';
@@ -112,18 +112,18 @@ sub cmd_setup {
     mkdir "$default_dir/bin";
 
     my $nodebrew_path = "$brew_dir/nodebrew";
-    my $nodebrew_source = fetch_nodebrew();
-    die "Error: fetch nodebrew faild.\n" unless $nodebrew_source;
-
-    open my $fh, '>', $nodebrew_path or die "Error: $!";
-    print $fh $nodebrew_source;
+    fetch_nodebrew();
     `chmod +x $nodebrew_path`;
-
     symlink $nodebrew_path, "$default_dir/bin/nodebrew";
     use_default() if get_current_version() eq 'none';
 
     print "install nodebrew in $brew_dir\n\n";
     print "Add your \$PATH: $node_dir/current/bin\n";
+}
+
+sub cmd_selfupdate {
+    fetch_nodebrew();
+    print "update successfull\n";
 }
 
 sub cmd_help {
@@ -138,6 +138,7 @@ Usage:
     nodebrew list                    List installed versions
     nodebrew ls                      Alias list
     nodebrew setup                   Install nodebrew
+    nodebrew selfupdate              Update nodebrew
 
 Example:
     nodebrew install v0.6.0     Install a specific version number
@@ -160,9 +161,14 @@ sub get_current_version {
 sub fetch_nodebrew {
     my $fetch_url = 'https://raw.github.com/hokaccha/nodebrew/master/nodebrew';
     my $fetch_cmd = $hascurl ? "curl -s $fetch_url" : "wget -q $fetch_url -O -";
-    return unless check_url($fetch_url);
+    my $nodebrew_path = "$brew_dir/nodebrew";
+    die "Error: fetch nodebrew faild.\n" unless check_url($fetch_url);
+
     print "fetching nodebrew...\n";
-    return `$fetch_cmd`;
+    my $nodebrew_source = `$fetch_cmd`;
+
+    open my $fh, '>', $nodebrew_path or die "Error: $!";
+    print $fh $nodebrew_source;
 }
 
 sub check_url {
