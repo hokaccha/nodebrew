@@ -36,9 +36,11 @@ mkdir $default_dir unless -e $default_dir;
 
 sub cmd_use {
     my $target = "$node_dir/$version";
+    my $nodebrew = "$target/bin/nodebrew";
     return print "$version is not installed\n" unless -e $target;
     unlink $current if -l $current;
     symlink $target, $current;
+    symlink "$brew_dir/nodebrew", $nodebrew unless -l $nodebrew;
     print "use $version\n";
 }
 
