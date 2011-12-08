@@ -21,6 +21,8 @@ my $src_dir = $brew_dir . '/src';
 my $node_dir = $brew_dir . '/node';
 my $current = $brew_dir . '/current';
 my $default_dir = $brew_dir . '/default';
+my $nodebrew_url = $ENV{'NODEBREW_URL'}
+    || 'https://raw.github.com/hokaccha/nodebrew/master/nodebrew';
 
 # check curl or wget
 my $hascurl = `which curl`;
@@ -159,10 +161,11 @@ sub get_current_version {
 }
 
 sub fetch_nodebrew {
-    my $fetch_url = 'https://raw.github.com/hokaccha/nodebrew/master/nodebrew';
-    my $fetch_cmd = $hascurl ? "curl -s $fetch_url" : "wget -q $fetch_url -O -";
+    my $fetch_cmd = $hascurl
+        ? "curl -s $nodebrew_url"
+        : "wget -q $nodebrew_url -O -";
     my $nodebrew_path = "$brew_dir/nodebrew";
-    die "Error: fetch nodebrew faild.\n" unless check_url($fetch_url);
+    die "Error: fetch nodebrew faild.\n" unless check_url($nodebrew_url);
 
     print "fetching nodebrew...\n";
     my $nodebrew_source = `$fetch_cmd`;
@@ -173,6 +176,7 @@ sub fetch_nodebrew {
 
 sub check_url {
     my $url = shift;
+    return 1 if $url =~ /^file/; # for debug
     my $check_cmd = $hascurl ? 'curl -Is' : 'wget -Sq --spider';
     return `$check_cmd "$url" 2>&1 | grep '200 OK'`;
 }
