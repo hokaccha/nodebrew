@@ -138,7 +138,6 @@ Usage:
     nodebrew use <version>           Modify PATH to use <version>
     nodebrew list                    List installed versions
     nodebrew ls                      Alias list
-    nodebrew setup                   Install nodebrew
     nodebrew selfupdate              Update nodebrew
 
 Example:
