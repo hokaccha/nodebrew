@@ -15,7 +15,7 @@ use File::Copy qw/copy/;
 our $VERSION = '0.1.0';
 my $cmd = $ARGV[0] || 'help';
 my $version = $ARGV[1];
-my @cmds = qw/use install uninstall list ls selfinstall/;
+my @cmds = qw/use install uninstall list ls/;
 my $brew_dir = $ENV{NODEBREW_HOME} || $ENV{HOME} . '/.nodebrew';
 my $src_dir = $brew_dir . '/src';
 my $node_dir = $brew_dir . '/node';
@@ -108,19 +108,6 @@ sub cmd_ls {
     cmd_list();
 }
 
-sub cmd_selfinstall {
-    my $from = $0;
-    my $to = "$brew_dir/nodebrew";
-    copy($from, $to) or die "$@";
-    chmod 0755, $to;
-
-    mkdir "$default_dir/bin" unless -e "$default_dir/bin";
-    if (! -e "$default_dir/bin/nodebrew") {
-        symlink $to, "$default_dir/bin/nodebrew";
-    }
-    use_default();
-}
-
 sub cmd_help {
     print <<"...";
 nodebrew $VERSION
@@ -132,7 +119,6 @@ Usage:
     nodebrew use <version>           Modify PATH to use <version>
     nodebrew list                    List installed versions
     nodebrew ls                      Alias list
-    nodebrew selfinstall             Install nodebrew self
 
 Example:
     nodebrew install v0.6.0     Install a specific version number
