@@ -4,11 +4,14 @@ Node.js version manager.
 
 ## Install
 
-Download script and set.
+Using curl one liner.
 
-    $ cd /path/to/bin
-    $ curl -O https://raw.github.com/hokaccha/nodebrew/master/nodebrew
-    $ chmod +x nodebrew
+    $ curl https://raw.github.com/hokaccha/nodebrew/master/nodebrew | perl - setup
+
+Or download and setup.
+
+    $ wget https://raw.github.com/hokaccha/nodebrew/master/nodebrew
+    $ perl nodebrew setup
 
 Add PATH setting your shell config file, .bashrc or .zshrc.
 
@@ -17,6 +20,10 @@ Add PATH setting your shell config file, .bashrc or .zshrc.
 Reload config.
 
     $ source ~/.bashrc
+
+Confirm.
+
+    $ nodebrew help
 
 ## Example
 
@@ -42,9 +49,9 @@ Switch use version to v0.4.0.
     $ node -v
     v0.4.0
 
-View all installed version list.
+View all installed version list or ls.
 
-    $ nodebrew list
+    $ nodebrew ls
     v0.4.0
     v0.6.0
 
@@ -62,3 +69,5 @@ Uninstall v0.6.0
     $ nodebrew uninstall <version>     Uninstall a version
     $ nodebrew use <version>           Modify PATH to use <version>
     $ nodebrew list                    List installed versions
+    $ nodebrew ls                      Alias list
+    $ nodebrew selfupdate              Update nodebrew
