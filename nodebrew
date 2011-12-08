@@ -119,8 +119,12 @@ sub cmd_setup {
     symlink $nodebrew_path, "$default_dir/bin/nodebrew";
     use_default() if get_current_version() eq 'none';
 
+    $brew_dir =~ s/$ENV{'HOME'}/\$HOME/;
     print "install nodebrew in $brew_dir\n\n";
-    print "Add your \$PATH: $brew_dir/current/bin\n";
+    print "========================================\n";
+    print "Add path:\n\n";
+    print "export PATH=$brew_dir/current/bin:\$PATH\n";
+    print "========================================\n";
 }
 
 sub cmd_selfupdate {
