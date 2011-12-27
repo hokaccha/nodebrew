@@ -9,6 +9,46 @@
 
 use strict;
 use warnings;
+
+package Nodebrew::Fetcher;
+
+sub new {
+    my ($class, $type) = @_;
+
+    $type eq 'wget' ? Nodebrew::Fetcher::wget->new:
+    $type eq 'curl' ? Nodebrew::Fetcher::curl->new:
+    die 'Fetcher type invalid';
+}
+
+package Nodebrew::Fetcher::curl;
+
+sub new {
+    my $class = shift;
+    my $self = {};
+
+    bless $self, $class;
+    return $self;
+}
+
+sub fetch {
+    my $self = shift;
+    my $url = shift;
+
+    `curl -s $url`;
+}
+
+package Nodebrew::Fetcher::wget;
+
+sub new {
+    my $class = shift;
+    my $self = {};
+
+    bless $self, $class;
+    return $self;
+}
+
+package Nodebrew;
+
 use File::Path qw/rmtree/;
 
 our $VERSION = '0.2.0';
