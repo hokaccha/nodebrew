@@ -178,10 +178,12 @@ sub check_url {
     return `$check_cmd "$url" 2>&1 | grep '200 OK'`;
 }
 
-if (0 == scalar grep { $_ eq $cmd } @cmds) {
-    cmd_help();
-}
-else {
-    no strict 'refs';
-    *{'cmd_' . $cmd}->();
+unless (caller) {
+    if (0 == scalar grep { $_ eq $cmd } @cmds) {
+        cmd_help();
+    }
+    else {
+        no strict 'refs';
+        *{'cmd_' . $cmd}->();
+    }
 }
