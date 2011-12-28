@@ -30,11 +30,22 @@ sub new {
     return $self;
 }
 
+sub fetch_able {
+    my ($self, $url) = @_;
+
+    `curl -Is "$url"` =~ m/200 OK/;
+}
+
 sub fetch {
-    my $self = shift;
-    my $url = shift;
+    my ($self, $url) = @_;
 
     `curl -s $url`;
+}
+
+sub download {
+    my ($self, $url, $path) = @_;
+
+    system "curl -C - --progress-bar $url -o $path";
 }
 
 package Nodebrew::Fetcher::wget;
@@ -46,6 +57,25 @@ sub new {
     bless $self, $class;
     return $self;
 }
+
+sub fetch_able {
+    my ($self, $url) = @_;
+
+    `wget -Sq --spider "$url" 2>&1` =~ m/200 OK/;
+}
+
+sub fetch {
+    my ($self, $url) = @_;
+
+    `wget -q $url -O -`;
+}
+
+sub download {
+    my ($self, $url, $path) = @_;
+
+    system "wget -c $url -O $path";
+}
+
 
 package Nodebrew;
 
