@@ -27,7 +27,7 @@ my $app = sub {
 
 my $client = sub {
     my ($url, $type) = @_;
-    my $fetcher = Nodebrew::Fetcher->new($type);
+    my $fetcher = Nodebrew::Fetcher::get($type);
 
     ok $fetcher->fetch_able($url);
     ok !$fetcher->fetch_able("$url/notfound");

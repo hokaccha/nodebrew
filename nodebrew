@@ -10,10 +10,205 @@
 use strict;
 use warnings;
 
-package Nodebrew::Fetcher;
+package Nodebrew;
+
+use File::Path qw/rmtree/;
+
+our $VERSION = '0.2.0';
 
 sub new {
-    my ($class, $type) = @_;
+    my $class = shift;
+    my $self = { @_ };
+
+    die 'brew_dir is required' unless $self->{brew_dir};
+    die 'fetcher is required' unless $self->{fetcher};
+
+    bless $self, $class;
+    $self->init();
+    return $self;
+}
+
+sub init {
+    my $self = shift;
+
+    $self->{src_dir} = $self->{brew_dir} . '/src';
+    $self->{node_dir} = $self->{brew_dir} . '/node';
+    $self->{current} = $self->{brew_dir} . '/current';
+    $self->{default_dir} = $self->{brew_dir} . '/default';
+}
+
+sub run {
+    my ($self, $command, $args) = @_;
+
+    if (my $cmd = $self->can("_cmd_$command")) {
+        $cmd->($self, $args);
+    }
+    else {
+        $self->_cmd_help($args);
+    }
+}
+
+sub _cmd_use {
+    my ($self, $args) = @_;
+    my $version = $args->[0];
+    my $target = "$self->{node_dir}/$version";
+    my $nodebrew_path = "$target/bin/nodebrew";
+
+    return print "$version is not installed\n" unless -e $target;
+    unlink $self->{current} if -l $self->{current};
+    symlink $target, $self->{current};
+    symlink "$self->{brew_dir}/nodebrew", $nodebrew_path unless -l $nodebrew_path;
+    print "use $version\n";
+}
+
+sub _cmd_install {
+    my ($self, $args) = @_;
+    my $version = $args->[0];
+
+    return print "$version is already installed\n"
+        if -e "$self->{node_dir}/$version";
+
+    my @tarballs = (
+        "http://nodejs.org/dist/$version/node-$version.tar.gz",
+        "http://nodejs.org/dist/node-$version.tar.gz",
+    );
+    my $tarball = '';
+    for (@tarballs) {
+        if ($self->{fetcher}->fetch_able($_)) {
+            $tarball = $_;
+            last;
+        }
+    }
+    return print "$version is not found\n" unless $tarball;
+
+    unlink "$self->{src_dir}/node-$version.tar.gz";
+    rmtree "$self->{src_dir}/node-$version";
+    print "fetch: $tarball\n";
+    $self->{fetcher}->download($tarball, "$self->{src_dir}/node-$version.tar.gz");
+
+    print qq[
+        cd "$self->{src_dir}" &&
+        tar -xzf "node-$version.tar.gz" &&
+        cd "node-$version" &&
+        ./configure --prefix="$self->{node_dir}/$version" &&
+        make &&
+        make install
+    ];
+}
+
+sub _cmd_uninstall {
+    my ($self, $args) = @_;
+    my $version = $args->[0];
+    my $target = "$self->{node_dir}/$version";
+    my $current_version = $self->get_current_version();
+    return print "$version is not installed\n" unless -e $target;
+    rmtree $target;
+    if ($current_version eq $version) {
+        $self->use_default();
+    }
+    print "$version uninstalled\n";
+}
+
+sub _cmd_list {
+    my ($self, $args) = @_;
+
+    opendir my $dh, $self->{node_dir} or die $!;
+    while (my $dir = readdir $dh) {
+        print "$dir\n" unless $dir =~ '^\.\.?$';
+    }
+
+    print "\ncurrent: " . $self->get_current_version() . "\n";
+}
+
+sub _cmd_ls {
+    my ($self, $args) = @_;
+
+    $self->_cmd_list($args);
+}
+
+sub _cmd_setup {
+    my ($self, $args) = @_;
+
+    mkdir $self->{brew_dir} unless -e $self->{brew_dir};
+    mkdir $self->{src_dir} unless -e $self->{src_dir};
+    mkdir $self->{node_dir} unless -e $self->{node_dir};
+    mkdir $self->{default_dir} unless -e $self->{default_dir};
+    mkdir "$self->{default_dir}/bin" unless -e "$self->{default_dir}/bin";
+
+    my $nodebrew_path = "$self->{brew_dir}/nodebrew";
+    $self->fetch_nodebrew();
+    `chmod +x $nodebrew_path`;
+    symlink $nodebrew_path, "$self->{default_dir}/bin/nodebrew";
+    $self->use_default() if $self->get_current_version() eq 'none';
+
+    my $brew_dir = $self->{brew_dir};
+    $brew_dir =~ s/$ENV{'HOME'}/\$HOME/;
+    print "install nodebrew in $brew_dir\n\n";
+    print "========================================\n";
+    print "Add path:\n\n";
+    print "export PATH=$brew_dir/current/bin:\$PATH\n";
+    print "========================================\n";
+}
+
+sub _cmd_selfupdate {
+    my ($self, $args) = @_;
+
+    $self->fetch_nodebrew();
+    print "update successfull\n";
+}
+
+sub _cmd_help {
+    my ($self, $args) = @_;
+
+    print <<"...";
+nodebrew $VERSION
+
+Usage:
+    nodebrew help                    Show this message
+    nodebrew install <version>       Download and install a <version>
+    nodebrew uninstall <version>     Uninstall a version
+    nodebrew use <version>           Modify PATH to use <version>
+    nodebrew list                    List installed versions
+    nodebrew ls                      Alias list
+    nodebrew selfupdate              Update nodebrew
+
+Example:
+    nodebrew install v0.6.0     Install a specific version number
+    nodebrew use v0.6.0         Use a specific version number
+...
+}
+
+sub use_default {
+    my $self = shift;
+
+    unlink $self->{current} if -l $self->{current};
+    symlink $self->{default_dir}, $self->{current};
+}
+
+sub get_current_version {
+    my $self = shift;
+
+    return 'none' unless -l $self->{current};
+    my $current_version = readlink $self->{current};
+    $current_version =~ m!^$self->{node_dir}/(.+)!;
+    return $1 || 'none';
+}
+
+sub fetch_nodebrew {
+    my $self = shift;
+
+    print "fetching nodebrew...\n";
+    my $nodebrew_source = $self->{fetcher}->fetch($self->{nodebrew_url});
+    my $nodebrew_path = "$self->{brew_dir}/nodebrew";
+
+    open my $fh, '>', $nodebrew_path or die "Error: $!";
+    print $fh $nodebrew_source;
+}
+
+package Nodebrew::Fetcher;
+
+sub get {
+    my $type = shift;
 
     $type eq 'wget' ? Nodebrew::Fetcher::wget->new:
     $type eq 'curl' ? Nodebrew::Fetcher::curl->new:
@@ -22,13 +217,7 @@ sub new {
 
 package Nodebrew::Fetcher::curl;
 
-sub new {
-    my $class = shift;
-    my $self = {};
-
-    bless $self, $class;
-    return $self;
-}
+sub new { bless {}; }
 
 sub fetch_able {
     my ($self, $url) = @_;
@@ -50,13 +239,7 @@ sub download {
 
 package Nodebrew::Fetcher::wget;
 
-sub new {
-    my $class = shift;
-    my $self = {};
-
-    bless $self, $class;
-    return $self;
-}
+sub new { bless {}; }
 
 sub fetch_able {
     my ($self, $url) = @_;
@@ -76,184 +259,24 @@ sub download {
     system "wget -c $url -O $path";
 }
 
+package main;
 
-package Nodebrew;
+use Cwd 'abs_path';
 
-use File::Path qw/rmtree/;
+sub main {
+    my $brew_dir = abs_path($ENV{'NODEBREW_ROOT'} || $ENV{'HOME'} . '/.nodebrew');
+    my $nodebrew_url = 'https://raw.github.com/hokaccha/nodebrew/master/nodebrew';
+    my $fetcher_type = `which curl` ? 'curl' :
+                       `which wget` ? 'wget' :
+                        die 'Need curl or wget';
+    my $command = shift @ARGV;
+    my $args = \@ARGV;
 
-our $VERSION = '0.2.0';
-my $cmd = $ARGV[0] || 'help';
-my $version = $ARGV[1];
-my @cmds = qw/use install uninstall list ls setup selfupdate/;
-my $brew_dir = $ENV{'NODEBREW_ROOT'} || $ENV{'HOME'} . '/.nodebrew';
-my $src_dir = $brew_dir . '/src';
-my $node_dir = $brew_dir . '/node';
-my $current = $brew_dir . '/current';
-my $default_dir = $brew_dir . '/default';
-my $nodebrew_url = $ENV{'NODEBREW_URL'}
-    || 'https://raw.github.com/hokaccha/nodebrew/master/nodebrew';
-
-# check curl or wget
-my $hascurl = `which curl`;
-my $haswget = `which wget`;
-if (!$hascurl && !$haswget) {
-    die 'Need curl or wget';
+    Nodebrew->new(
+        brew_dir     => $brew_dir,
+        nodebrew_url => $nodebrew_url,
+        fetcher      => Nodebrew::Fetcher::get($fetcher_type),
+    )->run($command, $args);
 }
 
-sub cmd_use {
-    my $target = "$node_dir/$version";
-    my $nodebrew = "$target/bin/nodebrew";
-    return print "$version is not installed\n" unless -e $target;
-    unlink $current if -l $current;
-    symlink $target, $current;
-    symlink "$brew_dir/nodebrew", $nodebrew unless -l $nodebrew;
-    print "use $version\n";
-}
-
-sub cmd_install {
-    return print "$version is already installed\n" if -e "$node_dir/$version";
-
-    my @tarballs = (
-        "http://nodejs.org/dist/$version/node-$version.tar.gz",
-        "http://nodejs.org/dist/node-$version.tar.gz",
-    );
-    my $tarball = '';
-    for (@tarballs) {
-        if (check_url($_)) {
-            $tarball = $_;
-            last;
-        }
-    }
-    return print "$version is not found\n" unless $tarball;
-
-    unlink "$src_dir/node-$version.tar.gz";
-    rmtree "$src_dir/node-$version";
-    print "fetch: $tarball\n";
-
-    my $fetch_cmd = $hascurl
-        ? "curl -C - --progress-bar $tarball -o"
-        : "wget -c $tarball -O";
-    my $install_cmd = qq[
-        cd "$src_dir" &&
-        $fetch_cmd "node-$version.tar.gz" &&
-        tar -xzf "node-$version.tar.gz" &&
-        cd "node-$version" &&
-        ./configure --prefix="$node_dir/$version" &&
-        make &&
-        make install
-    ];
-
-    system $install_cmd;
-}
-
-sub cmd_uninstall {
-    my $target = "$node_dir/$version";
-    my $current_version = get_current_version();
-    return print "$version is not installed\n" unless -e $target;
-    rmtree $target;
-    if ($current_version eq $version) {
-        use_default();
-    }
-    print "$version uninstalled\n";
-}
-
-sub cmd_list {
-    opendir my $dh, $node_dir or die $!;
-    while (my $dir = readdir $dh) {
-        print "$dir\n" unless $dir =~ '^\.\.?$';
-    }
-
-    print "\ncurrent: " . get_current_version() . "\n";
-}
-
-sub cmd_ls {
-    cmd_list();
-}
-
-sub cmd_setup {
-    mkdir $brew_dir;
-    mkdir $src_dir;
-    mkdir $node_dir;
-    mkdir $default_dir;
-    mkdir "$default_dir/bin";
-
-    my $nodebrew_path = "$brew_dir/nodebrew";
-    fetch_nodebrew();
-    `chmod +x $nodebrew_path`;
-    symlink $nodebrew_path, "$default_dir/bin/nodebrew";
-    use_default() if get_current_version() eq 'none';
-
-    $brew_dir =~ s/$ENV{'HOME'}/\$HOME/;
-    print "install nodebrew in $brew_dir\n\n";
-    print "========================================\n";
-    print "Add path:\n\n";
-    print "export PATH=$brew_dir/current/bin:\$PATH\n";
-    print "========================================\n";
-}
-
-sub cmd_selfupdate {
-    fetch_nodebrew();
-    print "update successfull\n";
-}
-
-sub cmd_help {
-    print <<"...";
-nodebrew $VERSION
-
-Usage:
-    nodebrew help                    Show this message
-    nodebrew install <version>       Download and install a <version>
-    nodebrew uninstall <version>     Uninstall a version
-    nodebrew use <version>           Modify PATH to use <version>
-    nodebrew list                    List installed versions
-    nodebrew ls                      Alias list
-    nodebrew selfupdate              Update nodebrew
-
-Example:
-    nodebrew install v0.6.0     Install a specific version number
-    nodebrew use v0.6.0         Use a specific version number
-...
-}
-
-sub use_default {
-    unlink $current if -l $current;
-    symlink $default_dir, $current;
-}
-
-sub get_current_version {
-    return 'none' unless -l $current;
-    my $current_version = readlink $current;
-    $current_version =~ m!^$node_dir/(.+)!;
-    return $1 || 'none';
-}
-
-sub fetch_nodebrew {
-    my $fetch_cmd = $hascurl
-        ? "curl -s $nodebrew_url"
-        : "wget -q $nodebrew_url -O -";
-    my $nodebrew_path = "$brew_dir/nodebrew";
-    die "Error: fetch nodebrew faild.\n" unless check_url($nodebrew_url);
-
-    print "fetching nodebrew...\n";
-    my $nodebrew_source = `$fetch_cmd`;
-
-    open my $fh, '>', $nodebrew_path or die "Error: $!";
-    print $fh $nodebrew_source;
-}
-
-sub check_url {
-    my $url = shift;
-    return 1 if $url =~ /^file/; # for debug
-    my $check_cmd = $hascurl ? 'curl -Is' : 'wget -Sq --spider';
-    return `$check_cmd "$url" 2>&1 | grep '200 OK'`;
-}
-
-unless (caller) {
-    if (0 == scalar grep { $_ eq $cmd } @cmds) {
-        cmd_help();
-    }
-    else {
-        no strict 'refs';
-        *{'cmd_' . $cmd}->();
-    }
-}
+main() unless caller;
