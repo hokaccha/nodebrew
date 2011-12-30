@@ -1,3 +1,9 @@
+0.3.2 / 2011-12-31
+====================
+
+* Add subcommand `ls-clean`
+* Fix Fix when install use cache
+
 0.3.1 / 2011-12-31
 ====================
 
