@@ -43,6 +43,7 @@ sub run_test {
     my $nodebrew = Nodebrew->new(
         brew_dir => "$FindBin::Bin/.nodebrew",
         nodebrew_url => "$url/nodebrew",
+        remote_list_url => "$url/list.html",
         fetcher => Nodebrew::Fetcher::get('curl'),
         tarballs => [
             "$url/notfound",
@@ -89,6 +90,9 @@ sub run_test {
 
     # ls
     is $run->('list'), $run->('ls');
+
+    # ls-remote
+    like $run->('ls-remote'), qr/v0.0.1    v0.0.2    v0.0.3    v0.0.4    v0.0.5    v0.0.6/;
 
     # selfupdate
     open my $fh, '>', "$FindBin::Bin/data/nodebrew";
