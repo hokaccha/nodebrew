@@ -165,6 +165,15 @@ sub _cmd_ls_remote {
     print "\n";
 }
 
+sub _cmd_ls_all {
+    my ($self, $args) = @_;
+
+    print "remote:\n";
+    $self->_cmd_ls_remote($args);
+    print "\nlocal:\n";
+    $self->_cmd_ls($args);
+}
+
 sub _cmd_setup {
     my ($self, $args) = @_;
 
@@ -210,6 +219,7 @@ Usage:
     nodebrew list                    List installed versions
     nodebrew ls                      Alias list
     nodebrew ls-remote               List remote versions
+    nodebrew ls-all                  List remote and installed versions
     nodebrew selfupdate              Update nodebrew
 
 Example:

@@ -95,6 +95,11 @@ sub run_test {
     # ls-remote
     like $run->('ls-remote'), qr/v0.0.1    v0.0.2    v0.0.3    v0.0.4    v0.0.5    v0.0.6/;
 
+    # ls-all
+    like $run->('ls-all'), qr/remote:/;
+    like $run->('ls-all'), qr/local:/;
+    like $run->('ls-all'), qr/current: v0.0.0/;
+
     # selfupdate
     open my $fh, '>', "$FindBin::Bin/data/nodebrew";
     print $fh 'updated';
