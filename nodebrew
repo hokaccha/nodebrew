@@ -133,8 +133,10 @@ sub _cmd_list {
     while (my $dir = readdir $dh) {
         push @versions, $dir unless $dir =~ '^\.\.?$';
     }
-    print join "\n", @{Nodebrew::Utils::sort_version(\@versions)};
 
+    print scalar @versions
+        ? join("\n", @{Nodebrew::Utils::sort_version(\@versions)})
+        : "not installed";
     print "\n\ncurrent: " . $self->get_current_version() . "\n";
 }
 

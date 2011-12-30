@@ -72,6 +72,7 @@ sub run_test {
     ok !-e "$nodebrew->{src_dir}/node-v0.0.0.tar.gz";
     ok !-e "$nodebrew->{src_dir}/node-v0.0.0";
     unlike $run->('list'), qr/v0.0.0/;
+    like $run->('list'), qr/not installed/;
 
     # install
     $run->('install', ['v0.0.0']);
@@ -105,6 +106,7 @@ sub run_test {
     is $run->('uninstall', ['v0.0.0']), "v0.0.0 uninstalled\n";
     is $run->('uninstall', ['v0.0.0']), "v0.0.0 is not installed\n";
     ok !-e "$nodebrew->{node_dir}/v0.0.0";
+    like $run->('list'), qr/not installed/;
     like $run->('list'), qr/current: none/;
     is readlink "$nodebrew->{current}", "$nodebrew->{default_dir}";
 
