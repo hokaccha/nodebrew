@@ -18,13 +18,22 @@ our $VERSION = '0.2.0';
 
 sub new {
     my $class = shift;
-    my $self = { @_ };
+    my %opt = @_;
+    my $self = {};
+    my @props = qw/brew_dir nodebrew_url fetcher tarballs/;
 
-    die 'brew_dir is required' unless $self->{brew_dir};
-    die 'fetcher is required' unless $self->{fetcher};
+    for (@props) {
+        if ($opt{$_}) {
+            $self->{$_} = $opt{$_};
+        }
+        else {
+            die "required $_";
+        }
+    }
 
     bless $self, $class;
     $self->init();
+
     return $self;
 }
 
@@ -40,7 +49,7 @@ sub init {
 sub run {
     my ($self, $command, $args) = @_;
 
-    if (my $cmd = $self->can("_cmd_$command")) {
+    if ($command && (my $cmd = $self->can("_cmd_$command"))) {
         $cmd->($self, $args);
     }
     else {
@@ -68,12 +77,10 @@ sub _cmd_install {
     return print "$version is already installed\n"
         if -e "$self->{node_dir}/$version";
 
-    my @tarballs = (
-        "http://nodejs.org/dist/$version/node-$version.tar.gz",
-        "http://nodejs.org/dist/node-$version.tar.gz",
-    );
-    my $tarball = '';
+    my $tarball;
+    my @tarballs = @{ $self->{tarballs} };
     for (@tarballs) {
+        $_ =~ s/{version}/$version/g;
         if ($self->{fetcher}->fetch_able($_)) {
             $tarball = $_;
             last;
@@ -84,9 +91,10 @@ sub _cmd_install {
     unlink "$self->{src_dir}/node-$version.tar.gz";
     rmtree "$self->{src_dir}/node-$version";
     print "fetch: $tarball\n";
-    $self->{fetcher}->download($tarball, "$self->{src_dir}/node-$version.tar.gz");
+    $self->{fetcher}->download($tarball, "$self->{src_dir}/node-$version.tar.gz")
+        or die "download faild: $tarball";
 
-    print qq[
+    system qq[
         cd "$self->{src_dir}" &&
         tar -xzf "node-$version.tar.gz" &&
         cd "node-$version" &&
@@ -234,7 +242,7 @@ sub fetch {
 sub download {
     my ($self, $url, $path) = @_;
 
-    system "curl -C - --progress-bar $url -o $path";
+    system("curl -C - --progress-bar $url -o $path") == 0;
 }
 
 package Nodebrew::Fetcher::wget;
@@ -256,7 +264,7 @@ sub fetch {
 sub download {
     my ($self, $url, $path) = @_;
 
-    system "wget -c $url -O $path";
+    system("wget -c $url -O $path") == 0;
 }
 
 package main;
@@ -276,6 +284,10 @@ sub main {
         brew_dir     => $brew_dir,
         nodebrew_url => $nodebrew_url,
         fetcher      => Nodebrew::Fetcher::get($fetcher_type),
+        tarballs     => [
+            "http://nodejs.org/dist/{version}/node-{version}.tar.gz",
+            "http://nodejs.org/dist/node-{version}.tar.gz",
+        ],
     )->run($command, $args);
 }
 

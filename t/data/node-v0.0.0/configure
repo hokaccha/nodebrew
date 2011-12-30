@@ -1,0 +1,16 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+
+my $prefix = shift @ARGV;
+$prefix =~ s/--prefix=(.+)/$1/;
+
+open my $fh, '>', 'Makefile';
+print $fh qq[
+all:
+	\@echo 'make ok'
+install:
+	\@echo 'make install'
+	\@mkdir $prefix
+];

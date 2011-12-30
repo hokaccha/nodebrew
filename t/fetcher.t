@@ -37,7 +37,7 @@ my $client = sub {
     mkdir $tmp_dir;
     my $filepath = "$tmp_dir/test.txt";
     ok !-e $filepath;
-    $fetcher->download($url, $filepath);
+    ok $fetcher->download($url, $filepath);
     ok -e $filepath;
     is read_file($filepath), 'success';
     rmtree $tmp_dir;
