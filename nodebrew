@@ -128,12 +128,14 @@ sub _cmd_uninstall {
 sub _cmd_list {
     my ($self, $args) = @_;
 
+    my @versions;
     opendir my $dh, $self->{node_dir} or die $!;
     while (my $dir = readdir $dh) {
-        print "$dir\n" unless $dir =~ '^\.\.?$';
+        push @versions, $dir unless $dir =~ '^\.\.?$';
     }
+    print join "\n", @{Nodebrew::Utils::sort_version(\@versions)};
 
-    print "\ncurrent: " . $self->get_current_version() . "\n";
+    print "\n\ncurrent: " . $self->get_current_version() . "\n";
 }
 
 sub _cmd_ls {
