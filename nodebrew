@@ -96,16 +96,26 @@ sub _cmd_install {
     }
     return print "$version is not found\n" unless $tarball;
 
-    unlink "$self->{src_dir}/node-$version.tar.gz";
-    rmtree "$self->{src_dir}/node-$version";
-    print "fetch: $tarball\n";
-    $self->{fetcher}->download($tarball, "$self->{src_dir}/node-$version.tar.gz")
-        or die "download faild: $tarball";
+    my $src_path = "$self->{src_dir}/node-$version";
+    if (!-d $src_path) {
+        $self->_cmd_clean([$version]);
+        print "fetch: $tarball\n";
+        $self->{fetcher}->download(
+            $tarball,
+            "$self->{src_dir}/node-$version.tar.gz"
+        ) or die "download faild: $tarball";
+
+        system qq[
+            cd "$self->{src_dir}" &&
+            tar -xzf "node-$version.tar.gz"
+        ];
+    }
+    else {
+        print "Install using cache.\n\n";
+    }
 
     system qq[
-        cd "$self->{src_dir}" &&
-        tar -xzf "node-$version.tar.gz" &&
-        cd "node-$version" &&
+        cd "$src_path" &&
         ./configure --prefix="$self->{node_dir}/$version" &&
         make &&
         make install
