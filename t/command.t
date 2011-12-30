@@ -84,6 +84,11 @@ sub run_test {
     is $run->('install', ['v0.0.0']), "v0.0.0 is already installed\n";
     is $run->('install', ['v0.0.1']), "v0.0.1 is not found\n";
 
+    # clean
+    $run->('clean', ['all']);
+    ok !-e "$nodebrew->{src_dir}/node-v0.0.0.tar.gz";
+    ok !-e "$nodebrew->{src_dir}/node-v0.0.0";
+
     # use
     $run->('use', ['v0.0.0']);
     like $run->('list'), qr/current: v0.0.0/;

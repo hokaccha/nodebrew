@@ -198,6 +198,27 @@ sub _cmd_setup {
     print "========================================\n";
 }
 
+sub _cmd_clean {
+    my ($self, $args) = @_;
+    my $version = $args->[0];
+
+    if ($version eq 'all') {
+        opendir my $dh, $self->{src_dir} or die $!;
+        while (my $file = readdir $dh) {
+            next if $file =~ m/^\./;
+            my $path = "$self->{src_dir}/$file";
+            unlink $path if -f $path;
+            rmtree $path if -d $path;
+        }
+    }
+    else {
+        unlink "$self->{src_dir}/node-$version.tar.gz";
+        rmtree "$self->{src_dir}/node-$version";
+    }
+
+    print "clean $version\n";
+}
+
 sub _cmd_selfupdate {
     my ($self, $args) = @_;
 
@@ -220,6 +241,7 @@ Usage:
     nodebrew ls                      Alias list
     nodebrew ls-remote               List remote versions
     nodebrew ls-all                  List remote and installed versions
+    nodebrew clean <version> | all   Remove source file
     nodebrew selfupdate              Update nodebrew
 
 Example:
