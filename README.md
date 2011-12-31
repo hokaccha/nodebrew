@@ -25,6 +25,12 @@ Confirm.
 
     $ nodebrew help
 
+## ENV
+
+`NODEBREW_ROOT` env var can change nodebrew's home directory. default is `$HOME/.nodebrew`.
+
+    export NODEBREW_ROOT=/path/to/.nodebrew
+
 ## Example
 
 Install v0.6.0
