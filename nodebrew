@@ -313,6 +313,33 @@ sub sort_version {
     } @$version];
 }
 
+sub find_version {
+    my ($version, $versions) = @_;
+
+    $versions = Nodebrew::Utils::sort_version($versions);
+    my @versions = @$versions;
+
+    return undef unless scalar @versions;
+    return pop @versions if $version eq 'latest';
+
+    my @v = map {
+        $_ && $_ eq 'x' ? undef : $_
+    } $version =~ m/^v?(\d+)\.?(\d+|x)?\.?(\d+|x)?$/;
+
+    my @ret;
+    if (defined($v[0]) && defined($v[1]) && !defined($v[2])) {
+        @ret = grep { /^v?$v[0]\.$v[1]\./ } @versions;
+    }
+    elsif (defined($v[0]) && !defined($v[1])) {
+        @ret = grep { /^v?$v[0]\./ } @versions;
+    }
+    else {
+        @ret = grep { /^v?$v[0]\.$v[1]\.$v[2]$/ } @versions;
+    }
+
+    pop @ret;
+}
+
 package Nodebrew::Fetcher;
 
 sub get {
