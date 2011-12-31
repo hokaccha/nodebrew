@@ -32,11 +32,19 @@ Install v0.6.0
     $ nodebrew install v0.6.0
     install ...
 
+    # or
+    $ nodebrew install latest # latest version
+    $ nodebrew install v0.6.x # v0.6 latest
+
 Switch use version to v0.6.0.
 
     $ nodebrew use v0.6.0
     $ node -v
     v0.6.0
+
+    # or
+    $ nodebrew use latest # latest version
+    $ nodebrew use v0.6.x # v0.6 latest
 
 Install v0.4.0
 
