@@ -1,3 +1,8 @@
+0.4.0  / 2012-01-01
+====================
+
+* Add auto verison find. like `install v0.6.x`, `use latest` Closes #3
+
 0.3.2 / 2011-12-31
 ====================
 
