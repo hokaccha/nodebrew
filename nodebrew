@@ -67,11 +67,14 @@ sub run {
 
 sub _cmd_use {
     my ($self, $args) = @_;
-    my $version = $args->[0];
+    my $orig_version = $args->[0];
+    my $version = Nodebrew::Utils::find_version(
+        $orig_version, $self->get_local_version()
+    ) or return print "$orig_version is not installed\n";
+
     my $target = "$self->{node_dir}/$version";
     my $nodebrew_path = "$target/bin/nodebrew";
 
-    return print "$version is not installed\n" unless -e $target;
     unlink $self->{current} if -l $self->{current};
     symlink $target, $self->{current};
     symlink "$self->{brew_dir}/nodebrew", $nodebrew_path unless -l $nodebrew_path;
@@ -82,6 +85,13 @@ sub _cmd_install {
     my ($self, $args) = @_;
     my $version = $args->[0];
 
+    if ($version !~ m/v\d+\.\d+\.\d+/) {
+        $version = Nodebrew::Utils::find_version(
+            $version, $self->get_remote_version()
+        );
+    }
+
+    return print "version not found\n" unless $version;
     return print "$version is already installed\n"
         if -e "$self->{node_dir}/$version";
 
@@ -138,14 +148,9 @@ sub _cmd_uninstall {
 sub _cmd_list {
     my ($self, $args) = @_;
 
-    my @versions;
-    opendir my $dh, $self->{node_dir} or die $!;
-    while (my $dir = readdir $dh) {
-        push @versions, $dir unless $dir =~ '^\.\.?$';
-    }
-
-    print scalar @versions
-        ? join("\n", @{Nodebrew::Utils::sort_version(\@versions)})
+    my $versions = $self->get_local_version();
+    print scalar @$versions
+        ? join("\n", @{Nodebrew::Utils::sort_version($versions)})
         : "not installed";
     print "\n\ncurrent: " . $self->get_current_version() . "\n";
 }
@@ -287,6 +292,18 @@ sub fetch_nodebrew {
     print $fh $nodebrew_source;
 }
 
+sub get_local_version {
+    my $self = shift;
+
+    my @versions;
+    opendir my $dh, $self->{node_dir} or die $!;
+    while (my $dir = readdir $dh) {
+        push @versions, $dir unless $dir =~ '^\.\.?$';
+    }
+
+    return \@versions;
+}
+
 sub get_remote_version {
     my $self = shift;
 
@@ -324,17 +341,17 @@ sub find_version {
 
     my @v = map {
         $_ && $_ eq 'x' ? undef : $_
-    } $version =~ m/^v?(\d+)\.?(\d+|x)?\.?(\d+|x)?$/;
+    } $version =~ m/^v(\d+)\.?(\d+|x)?\.?(\d+|x)?$/;
 
     my @ret;
-    if (defined($v[0]) && defined($v[1]) && !defined($v[2])) {
+    if (defined($v[0]) && defined($v[1]) && defined($v[2])) {
+        @ret = grep { /^v?$v[0]\.$v[1]\.$v[2]$/ } @versions;
+    }
+    elsif (defined($v[0]) && defined($v[1]) && !defined($v[2])) {
         @ret = grep { /^v?$v[0]\.$v[1]\./ } @versions;
     }
     elsif (defined($v[0]) && !defined($v[1])) {
         @ret = grep { /^v?$v[0]\./ } @versions;
-    }
-    else {
-        @ret = grep { /^v?$v[0]\.$v[1]\.$v[2]$/ } @versions;
     }
 
     pop @ret;

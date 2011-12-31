@@ -9,8 +9,8 @@ $prefix =~ s/--prefix=(.+)/$1/;
 open my $fh, '>', 'Makefile';
 print $fh qq[
 all:
-	\@echo 'make ok'
+	\@echo -n ''
 install:
-	\@echo 'make install'
+	\@echo -n ''
 	\@mkdir $prefix
 ];

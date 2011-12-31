@@ -43,7 +43,6 @@ is Nodebrew::Utils::find_version('v0', $versions), 'v0.10.0';
 is Nodebrew::Utils::find_version('v2', $versions), 'v2.0.1';
 is Nodebrew::Utils::find_version('v1.x', $versions), 'v1.1.0';
 is Nodebrew::Utils::find_version('v0.x.1', $versions), 'v0.10.0';
-is Nodebrew::Utils::find_version('0.1', $versions), 'v0.1.10';
 is Nodebrew::Utils::find_version('v0.5.0', $versions), 'v0.5.0';
 is Nodebrew::Utils::find_version('v0.5.1', $versions), undef;
 is Nodebrew::Utils::find_version('v0.6', $versions), undef;
