@@ -95,22 +95,34 @@ sub run_test {
     like $run->('list'), qr/v0.1.1/;
     like $run->('list'), qr/current: none/;
     is $run->('install', ['v0.1.1']), "v0.1.1 is already installed\n";
+    is $run->('install', ['0.1.1']), "v0.1.1 is already installed\n";
     is $run->('install', ['v0.1.3']), "v0.1.3 is not found\n";
+    is $run->('install', ['0.1.3']), "v0.1.3 is not found\n";
 
     $run->('install', ['v0.1.x']);
     like $run->('list'), qr/v0.1.2/;
+
+    $run->('install', ['0.6.0']); # without 'v'
+    like $run->('list'), qr/v0.6.0/;
 
     $run->('install', ['latest']);
     like $run->('list'), qr/v0.6.1/;
 
     # clean
-    $run->('clean', ['v0.1.1']);
+    is $run->('clean', ['v0.1.1']), "clean v0.1.1\n";
     ok !-e "$nodebrew->{src_dir}/node-v0.1.1.tar.gz";
     ok !-e "$nodebrew->{src_dir}/node-v0.1.1";
     ok -e "$nodebrew->{src_dir}/node-v0.1.2.tar.gz";
     ok -e "$nodebrew->{src_dir}/node-v0.1.2";
+    ok -e "$nodebrew->{src_dir}/node-v0.6.0.tar.gz";
+    ok -e "$nodebrew->{src_dir}/node-v0.6.0";
     ok -e "$nodebrew->{src_dir}/node-v0.6.1.tar.gz";
     ok -e "$nodebrew->{src_dir}/node-v0.6.1";
+
+    $run->('clean', ['0.6.0']); # without 'v'
+    ok !-e "$nodebrew->{src_dir}/node-v0.6.0.tar.gz";
+    ok !-e "$nodebrew->{src_dir}/node-v0.6.0";
+
     $run->('clean', ['all']);
     ok !-e "$nodebrew->{src_dir}/node-v0.1.2.tar.gz";
     ok !-e "$nodebrew->{src_dir}/node-v0.1.2";
@@ -125,12 +137,17 @@ sub run_test {
     $run->('use', ['v0.1.x']);
     like $run->('list'), qr/current: v0.1.2/;
 
+    $run->('use', ['0.6.0']); # without 'v'
+    like $run->('list'), qr/current: v0.6.0/;
+
+    $run->('use', ['0.1.x']); # without 'v'
+    like $run->('list'), qr/current: v0.1.2/;
+
     $run->('use', ['latest']);
     like $run->('list'), qr/current: v0.6.1/;
 
     is $run->('use', ['v0.3.0']), "v0.3.0 is not installed\n";
-    like $run->('list'), qr/current: v0.6.1/;
-
+    is $run->('use', ['0.3.0']), "v0.3.0 is not installed\n";
     is $run->('use', ['foo']), "foo is not installed\n";
     like $run->('list'), qr/current: v0.6.1/;
 
@@ -154,11 +171,15 @@ sub run_test {
 
     # uninstall
     is $run->('uninstall', ['v0.6.1']), "v0.6.1 uninstalled\n";
-    is $run->('uninstall', ['v0.6.1']), "v0.6.1 is not installed\n";
     ok !-e "$nodebrew->{node_dir}/v0.6.1";
     unlike $run->('list'), qr/v0.6.1/;
     like $run->('list'), qr/current: none/;
     is readlink "$nodebrew->{current}", "$nodebrew->{default_dir}";
+
+    is $run->('uninstall', ['v0.6.1']), "v0.6.1 is not installed\n";
+    is $run->('uninstall', ['foo']), "foo is not installed\n";
+    is $run->('uninstall', ['0.6.0']), "v0.6.0 uninstalled\n"; # without v
+    ok !-e "$nodebrew->{node_dir}/v0.6.0";
 
     # help
     like $run->('help'), qr/Usage:/;

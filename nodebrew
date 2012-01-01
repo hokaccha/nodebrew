@@ -67,7 +67,7 @@ sub run {
 
 sub _cmd_use {
     my ($self, $args) = @_;
-    my $orig_version = $args->[0];
+    my $orig_version = _v($args->[0]);
     my $version = Nodebrew::Utils::find_version(
         $orig_version, $self->get_local_version()
     ) or return print "$orig_version is not installed\n";
@@ -83,7 +83,7 @@ sub _cmd_use {
 
 sub _cmd_install {
     my ($self, $args) = @_;
-    my $version = $args->[0];
+    my $version = _v($args->[0]);
 
     if ($version !~ m/v\d+\.\d+\.\d+/) {
         $version = Nodebrew::Utils::find_version(
@@ -134,9 +134,10 @@ sub _cmd_install {
 
 sub _cmd_uninstall {
     my ($self, $args) = @_;
-    my $version = $args->[0];
+    my $version = _v($args->[0]);
     my $target = "$self->{node_dir}/$version";
     my $current_version = $self->get_current_version();
+
     return print "$version is not installed\n" unless -e $target;
     rmtree $target;
     if ($current_version eq $version) {
@@ -147,8 +148,8 @@ sub _cmd_uninstall {
 
 sub _cmd_list {
     my ($self, $args) = @_;
-
     my $versions = $self->get_local_version();
+
     print scalar @$versions
         ? join("\n", @{Nodebrew::Utils::sort_version($versions)})
         : "not installed";
@@ -167,6 +168,7 @@ sub _cmd_ls_remote {
         = Nodebrew::Utils::sort_version($self->get_remote_version());
     my $i = 0;
     my %tmp;
+
     for (@$remote_version) {
         my ($v1, $v2, $v3) = $_ =~ m/v(\d+)\.(\d+)\.(\d+)/;
         if (!$tmp{"$v1.$v2"}++) {
@@ -215,7 +217,7 @@ sub _cmd_setup {
 
 sub _cmd_clean {
     my ($self, $args) = @_;
-    my $version = $args->[0];
+    my $version = _v($args->[0]);
 
     if ($version eq 'all') {
         opendir my $dh, $self->{src_dir} or die $!;
@@ -316,6 +318,12 @@ sub get_remote_version {
     }
 
     return \@versions;
+}
+
+sub _v {
+    my $version = shift;
+
+    return $version =~ m/^\d+\.(\d+|x)\.(\d+|x)$/ ? "v$version" : $version;
 }
 
 package Nodebrew::Utils;
