@@ -119,15 +119,19 @@ sub run_test {
     ok -e "$nodebrew->{src_dir}/node-v0.6.1.tar.gz";
     ok -e "$nodebrew->{src_dir}/node-v0.6.1";
 
-    $run->('clean', ['0.6.0']); # without 'v'
+    is $run->('clean', ['0.6.0']), "clean v0.6.0\n"; # without 'v'
     ok !-e "$nodebrew->{src_dir}/node-v0.6.0.tar.gz";
     ok !-e "$nodebrew->{src_dir}/node-v0.6.0";
 
-    $run->('clean', ['all']);
+    is $run->('clean', ['all']), "clean all\n";
     ok !-e "$nodebrew->{src_dir}/node-v0.1.2.tar.gz";
     ok !-e "$nodebrew->{src_dir}/node-v0.1.2";
     ok !-e "$nodebrew->{src_dir}/node-v0.6.1.tar.gz";
     ok !-e "$nodebrew->{src_dir}/node-v0.6.1";
+
+    is $run->('clean', ['v0.1.1']), "v0.1.1 is already cleaned\n";
+    is $run->('clean', ['0.1.1']), "v0.1.1 is already cleaned\n";
+    is $run->('clean', ['foo']), "foo is already cleaned\n";
 
     # use
     $run->('use', ['v0.1.1']);

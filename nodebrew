@@ -227,13 +227,18 @@ sub _cmd_clean {
             unlink $path if -f $path;
             rmtree $path if -d $path;
         }
+        print "clean $version\n";
     }
-    else {
+    elsif (-e "$self->{src_dir}/node-$version.tar.gz" ||
+           -e "$self->{src_dir}/node-$version") {
         unlink "$self->{src_dir}/node-$version.tar.gz";
         rmtree "$self->{src_dir}/node-$version";
+        print "clean $version\n";
+    }
+    else {
+        print "$version is already cleaned\n";
     }
 
-    print "clean $version\n";
 }
 
 sub _cmd_selfupdate {
