@@ -1,3 +1,9 @@
+0.4.1  / 2012-01-01
+====================
+
+* Fix version args without `v`
+* Bug fix
+
 0.4.0  / 2012-01-01
 ====================
 
@@ -7,7 +13,7 @@
 ====================
 
 * Add subcommand `ls-clean`
-* Fix Fix when install use cache
+* Fix when install use cache
 
 0.3.1 / 2011-12-31
 ====================
