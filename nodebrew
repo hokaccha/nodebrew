@@ -329,7 +329,7 @@ sub _v {
     my $version = shift;
 
     return unless $version;
-    return $version =~ m/^\d+\.(\d+|x)\.(\d+|x)$/ ? "v$version" : $version;
+    return $version =~ m/^\d+\.?(\d+|x)?\.?(\d+|x)?$/ ? "v$version" : $version;
 }
 
 package Nodebrew::Utils;

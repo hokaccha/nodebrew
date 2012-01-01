@@ -150,6 +150,10 @@ sub run_test {
     $run->('use', ['0.1.x']); # without 'v'
     like $run->('list'), qr/current: v0.1.2/;
 
+    $run->('use', ['0.1.1']); # without 'v'
+    $run->('use', ['0.1']); # without 'v'
+    like $run->('list'), qr/current: v0.1.2/;
+
     $run->('use', ['latest']);
     like $run->('list'), qr/current: v0.6.1/;
 
