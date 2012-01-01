@@ -67,7 +67,7 @@ sub run {
 
 sub _cmd_use {
     my ($self, $args) = @_;
-    my $orig_version = _v($args->[0]);
+    my $orig_version = _v($args->[0]) or return print "required version\n";
     my $version = Nodebrew::Utils::find_version(
         $orig_version, $self->get_local_version()
     ) or return print "$orig_version is not installed\n";
@@ -83,7 +83,7 @@ sub _cmd_use {
 
 sub _cmd_install {
     my ($self, $args) = @_;
-    my $version = _v($args->[0]);
+    my $version = _v($args->[0]) or return print "required version\n";
 
     if ($version !~ m/v\d+\.\d+\.\d+/) {
         $version = Nodebrew::Utils::find_version(
@@ -134,7 +134,7 @@ sub _cmd_install {
 
 sub _cmd_uninstall {
     my ($self, $args) = @_;
-    my $version = _v($args->[0]);
+    my $version = _v($args->[0]) or return print "required version\n";
     my $target = "$self->{node_dir}/$version";
     my $current_version = $self->get_current_version();
 
@@ -217,7 +217,7 @@ sub _cmd_setup {
 
 sub _cmd_clean {
     my ($self, $args) = @_;
-    my $version = _v($args->[0]);
+    my $version = _v($args->[0]) or return print "required version\n";
 
     if ($version eq 'all') {
         opendir my $dh, $self->{src_dir} or die $!;
@@ -328,6 +328,7 @@ sub get_remote_version {
 sub _v {
     my $version = shift;
 
+    return unless $version;
     return $version =~ m/^\d+\.(\d+|x)\.(\d+|x)$/ ? "v$version" : $version;
 }
 

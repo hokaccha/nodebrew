@@ -108,6 +108,8 @@ sub run_test {
     $run->('install', ['latest']);
     like $run->('list'), qr/v0.6.1/;
 
+    is $run->('install', []), "required version\n";
+
     # clean
     is $run->('clean', ['v0.1.1']), "clean v0.1.1\n";
     ok !-e "$nodebrew->{src_dir}/node-v0.1.1.tar.gz";
@@ -132,6 +134,7 @@ sub run_test {
     is $run->('clean', ['v0.1.1']), "v0.1.1 is already cleaned\n";
     is $run->('clean', ['0.1.1']), "v0.1.1 is already cleaned\n";
     is $run->('clean', ['foo']), "foo is already cleaned\n";
+    is $run->('clean', []), "required version\n";
 
     # use
     $run->('use', ['v0.1.1']);
@@ -154,6 +157,8 @@ sub run_test {
     is $run->('use', ['0.3.0']), "v0.3.0 is not installed\n";
     is $run->('use', ['foo']), "foo is not installed\n";
     like $run->('list'), qr/current: v0.6.1/;
+
+    is $run->('use', []), "required version\n";
 
     # ls
     is $run->('list'), $run->('ls');
@@ -184,6 +189,8 @@ sub run_test {
     is $run->('uninstall', ['foo']), "foo is not installed\n";
     is $run->('uninstall', ['0.6.0']), "v0.6.0 uninstalled\n"; # without v
     ok !-e "$nodebrew->{node_dir}/v0.6.0";
+
+    is $run->('uninstall', []), "required version\n";
 
     # help
     like $run->('help'), qr/Usage:/;
