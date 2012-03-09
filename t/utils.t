@@ -37,6 +37,7 @@ is_deeply Nodebrew::Utils::sort_version($versions), [
 ];
 
 is Nodebrew::Utils::find_version('latest', $versions), 'v10.0.0';
+is Nodebrew::Utils::find_version('stable', $versions), 'v10.0.0';
 is Nodebrew::Utils::find_version('v0.1.x', $versions), 'v0.1.10';
 is Nodebrew::Utils::find_version('v0.1', $versions), 'v0.1.10';
 is Nodebrew::Utils::find_version('v0', $versions), 'v0.10.0';
@@ -63,5 +64,20 @@ is_deeply $versions, [
     'v1.1.0',
     'v2.0.1',
 ];
+
+is Nodebrew::Utils::find_version('stable', [
+    'v0.0.1',
+    'v0.6.2',
+    'v0.7.8']), 'v0.6.2';
+
+is Nodebrew::Utils::find_version('stable', [
+    'v0.0.1',
+    'v1.0.0',
+    'v0.2.0']), 'v1.0.0';
+
+is Nodebrew::Utils::find_version('stable', [
+    'v0.0.1',
+    'v1.5.0',
+    'v2.0.0']), 'v2.0.0';
 
 done_testing;

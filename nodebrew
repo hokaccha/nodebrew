@@ -353,6 +353,14 @@ sub find_version {
     return undef unless scalar @versions;
     return pop @versions if $version eq 'latest';
 
+    if ($version eq 'stable') {
+        for (reverse @versions) {
+            my ($miner) = m/^v\d+\.(\d+)/;
+            return $_ if $miner % 2 == 0;
+        }
+        return;
+    }
+
     my @v = map {
         $_ && $_ eq 'x' ? undef : $_
     } $version =~ m/^v(\d+)\.?(\d+|x)?\.?(\d+|x)?$/;
