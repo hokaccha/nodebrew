@@ -40,6 +40,7 @@ Install.
 
     # or
     $ nodebrew install latest # latest version
+    $ nodebrew install stable # stable version
     $ nodebrew install v0.6.x # v0.6 latest
     $ nodebrew install 0.6.0  # without `v`
 
@@ -51,6 +52,7 @@ Switch use version.
 
     # or
     $ nodebrew use latest # latest version
+    $ nodebrew use stable # stable version
     $ nodebrew use v0.6.x # v0.6 latest
     $ nodebrew use 0.6.0  # without `v`
 
