@@ -12,6 +12,16 @@ use File::Read;
 require 'nodebrew';
 
 my $data_dir = "$FindBin::Bin/data";
+my $brew_dir = "$FindBin::Bin/.nodebrew";
+
+sub clean {
+    open my $fh, '>', "$data_dir/nodebrew";
+    print $fh 'nodebrew source';
+    rmtree $brew_dir;
+    rmtree "$data_dir/install";
+}
+
+clean();
 
 my $app = sub {
     my $env = shift;
@@ -41,7 +51,6 @@ sub get_run {
 
 sub run_test {
     my $url = shift;
-    my $brew_dir = "$FindBin::Bin/.nodebrew";
     my $nodebrew = Nodebrew->new(
         brew_dir => "$FindBin::Bin/.nodebrew",
         nodebrew_url => "$url/nodebrew",
@@ -182,6 +191,26 @@ sub run_test {
     is read_file("$nodebrew->{brew_dir}/nodebrew"), "updated";
     like $run->('list'), qr/current: v0.6.1/;
 
+    # alias
+    ok !-e "$nodebrew->{alias_file}";
+    is $run->('alias', ['foo', 'bar']), "foo -> bar\n";
+    ok -e "$nodebrew->{alias_file}";
+    is $run->('alias'), "foo -> bar\n";
+
+    is $run->('alias', ['hoge', 'fuga']), "hoge -> fuga\n";
+    is $run->('alias'), "foo -> bar\nhoge -> fuga\n";
+
+    is $run->('alias', ['foo', 'baz']), "foo -> baz\n";
+    is $run->('alias'), "foo -> baz\nhoge -> fuga\n";
+
+    $run->('alias', ['foo', 'v0.6.0']);
+    $run->('use', ['foo']);
+    like $run->('list'), qr/current: v0.6.0/;
+
+    $run->('alias', ['0.6', '0.6.x']);
+    $run->('use', ['0.6']);
+    like $run->('list'), qr/current: v0.6.1/;
+
     # uninstall
     is $run->('uninstall', ['v0.6.1']), "v0.6.1 uninstalled\n";
     ok !-e "$nodebrew->{node_dir}/v0.6.1";
@@ -202,10 +231,7 @@ sub run_test {
     is $run->('invalid command'), $run->('help');
 
     # clean
-    open $fh, '>', "$data_dir/nodebrew";
-    print $fh 'nodebrew source';
-    rmtree $brew_dir;
-    rmtree "$data_dir/install";
+    clean();
 }
 
 test_tcp(

@@ -50,6 +50,7 @@ sub init {
     $self->{node_dir} = $self->{brew_dir} . '/node';
     $self->{current} = $self->{brew_dir} . '/current';
     $self->{default_dir} = $self->{brew_dir} . '/default';
+    $self->{alias_file} = $self->{brew_dir} . '/alias';
 }
 
 sub run {
@@ -67,7 +68,10 @@ sub run {
 
 sub _cmd_use {
     my ($self, $args) = @_;
-    my $orig_version = _v($args->[0]) or return print "required version\n";
+
+    my $alias = Nodebrew::Config->new($self->{alias_file});
+    my $orig_version = _v($alias->get($args->[0])) || _v($args->[0])
+        or return print "required version\n";
     my $version = Nodebrew::Utils::find_version(
         $orig_version, $self->get_local_version()
     ) or return print "$orig_version is not installed\n";
@@ -189,6 +193,32 @@ sub _cmd_ls_all {
     $self->_cmd_ls_remote($args);
     print "\nlocal:\n";
     $self->_cmd_ls($args);
+}
+
+sub _cmd_alias {
+    my ($self, $args) = @_;
+
+    my ($key, $val)  = $args ? @$args : ();
+    my $alias = Nodebrew::Config->new($self->{alias_file});
+
+    # set alias
+    if ($key && $val) {
+        $alias->set($key, $val);
+        $alias->save();
+        print "$key -> $val\n";
+    }
+    # get alias
+    elsif ($key) {
+        $val = $alias->get($key);
+        print "$key -> $val";
+    }
+    # get alias all
+    else {
+        my $datas = $alias->get_all();
+        for (keys %{$datas}) {
+            print $_ . ' -> ' . $datas->{$_} . "\n";
+        }
+    }
 }
 
 sub _cmd_setup {
@@ -388,7 +418,7 @@ sub new {
     if (-e $file) {
         open my $fh, '<', $file or die "Error: $!";
         my $str = '';
-        while (<$fh>) { $str .= $_ }; 
+        while (<$fh>) { $str .= $_ };
         close $fh;
         $data = Nodebrew::Config::_parse($str);
     }
