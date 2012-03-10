@@ -379,6 +379,28 @@ sub find_version {
     pop @ret;
 }
 
+sub config_parse {
+    my $str = shift;
+
+    my %ret;
+    for (split /\n/, $str) {
+        my ($key, $val) = ($_ =~ m/^\s*(.*?)\s*=\s*(.*?)\s*$/);
+        $ret{$key} = $val if $key;
+    }
+    return \%ret;
+}
+
+sub config_strigify {
+    my $datas = shift;
+
+    my $ret = '';
+    for (keys %$datas) {
+        $ret .= $_ . ' = ' . $datas->{$_} . "\n";
+    }
+
+    return $ret;
+}
+
 package Nodebrew::Fetcher;
 
 sub get {
