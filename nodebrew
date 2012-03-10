@@ -449,6 +449,16 @@ sub set {
     return;
 }
 
+sub del {
+    my ($self, $key) = @_;
+
+    if ($key && $self->get($key)) {
+        delete $self->{data}->{$key};
+        return 1;
+    }
+    return;
+}
+
 sub save {
     my $self = shift;
 
