@@ -396,10 +396,16 @@ sub new {
     bless { file => $file, data => $data }, $class;
 }
 
+sub get_all {
+    my $self = shift;
+
+    return $self->{data};
+}
+
 sub get {
     my ($self, $key) = @_;
 
-    return $key ? $self->{data}->{$key} : $self->{data};
+    return $self->{data}->{$key};
 }
 
 sub set {
