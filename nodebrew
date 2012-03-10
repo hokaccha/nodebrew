@@ -221,6 +221,24 @@ sub _cmd_alias {
     }
 }
 
+sub _cmd_unalias {
+    my ($self, $args) = @_;
+
+    my $alias = Nodebrew::Config->new($self->{alias_file});
+    my $key = $args->[0];
+    if (!$key) {
+        return;
+    }
+
+    if ($alias->del($key)) {
+        $alias->save();
+        print "remove $key\n";
+    }
+    else {
+        print "not register $key\n";
+    }
+}
+
 sub _cmd_setup {
     my ($self, $args) = @_;
 

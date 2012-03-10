@@ -211,6 +211,11 @@ sub run_test {
     $run->('use', ['0.6']);
     like $run->('list'), qr/current: v0.6.1/;
 
+    is $run->('unalias', ['foo']), "remove foo\n";
+    is $run->('alias'), "0.6 -> 0.6.x\nhoge -> fuga\n";
+
+    is $run->('unalias', ['foo']), "not register foo\n";
+
     # uninstall
     is $run->('uninstall', ['v0.6.1']), "v0.6.1 uninstalled\n";
     ok !-e "$nodebrew->{node_dir}/v0.6.1";
