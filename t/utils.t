@@ -80,19 +80,4 @@ is Nodebrew::Utils::find_version('stable', [
     'v1.5.0',
     'v2.0.0']), 'v2.0.0';
 
-is_deeply Nodebrew::Utils::config_parse('
-foo = bar
-hoge=fuga
-'), { foo => 'bar', hoge => 'fuga' };
-
-is_deeply Nodebrew::Utils::config_parse('
-foo = bar=baz
-hoge = fuga = piyo
-'), { foo => 'bar=baz', hoge => 'fuga = piyo' };
-
-is Nodebrew::Utils::config_strigify({
-    foo => 'bar',
-    hoge => 'fuga',
-}), "foo = bar\nhoge = fuga\n";
-
 done_testing;

@@ -379,7 +379,51 @@ sub find_version {
     pop @ret;
 }
 
-sub config_parse {
+package Nodebrew::Config;
+
+sub new {
+    my ($class, $file) = @_;
+
+    my $data = {};
+    if (-e $file) {
+        open my $fh, '<', $file or die "Error: $!";
+        my $str = '';
+        while (<$fh>) { $str .= $_ }; 
+        close $fh;
+        $data = Nodebrew::Config::_parse($str);
+    }
+
+    bless { file => $file, data => $data }, $class;
+}
+
+sub get {
+    my ($self, $key) = @_;
+
+    return $key ? $self->{data}->{$key} : $self->{data};
+}
+
+sub set {
+    my ($self, $key, $val) = @_;
+
+    if ($key && $val) {
+        $self->{data}->{$key} = $val;
+        return 1;
+    }
+
+    return;
+}
+
+sub save {
+    my $self = shift;
+
+    open my $fh, '>', $self->{file} or die "Error: $!";
+    print $fh Nodebrew::Config::_strigify($self->{data});
+    close $fh;
+
+    return 1;
+}
+
+sub _parse {
     my $str = shift;
 
     my %ret;
@@ -390,7 +434,7 @@ sub config_parse {
     return \%ret;
 }
 
-sub config_strigify {
+sub _strigify {
     my $datas = shift;
 
     my $ret = '';
