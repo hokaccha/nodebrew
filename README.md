@@ -83,6 +83,17 @@ Remote and local version view.
 
     current: v0.6.0
 
+Set alias.
+
+    $ nodebrew alias default v0.4.7
+    default -> v0.4.7
+
+    $ nodebrew use default
+    use v0.4.7
+
+    $ nodebrew unalias default
+    remove default
+
 Uninstall.
 
     $ nodebrew v0.6.0
@@ -99,8 +110,11 @@ Update nodebrew.
     $ nodebrew uninstall <version>     Uninstall a version
     $ nodebrew use <version>           Modify PATH to use <version>
     $ nodebrew list                    List installed versions
-    $ nodebrew ls                      Alias list
+    $ nodebrew ls                      Alias for `list`
     $ nodebrew ls-remote               List remote versions
     $ nodebrew ls-all                  List remote and installed versions
+    $ nodebrew alias <key> <version>   Set alias to version
+    $ nodebrew alias <key> <version>   Alias keyword to version
+    $ nodebrew unalias <key>           Remove alias
     $ nodebrew clean <version> | all   Remove source file
     $ nodebrew selfupdate              Update nodebrew

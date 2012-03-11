@@ -308,9 +308,11 @@ Usage:
     nodebrew uninstall <version>     Uninstall a version
     nodebrew use <version>           Modify PATH to use <version>
     nodebrew list                    List installed versions
-    nodebrew ls                      Alias list
+    nodebrew ls                      Alias for `list`
     nodebrew ls-remote               List remote versions
     nodebrew ls-all                  List remote and installed versions
+    nodebrew alias <key> <version>   Set alias to version
+    nodebrew unalias <key>           Remove alias
     nodebrew clean <version> | all   Remove source file
     nodebrew selfupdate              Update nodebrew
 
