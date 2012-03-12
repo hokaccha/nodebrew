@@ -203,6 +203,9 @@ sub run_test {
     is $run->('alias', ['foo', 'baz']), "foo -> baz\n";
     is $run->('alias'), "foo -> baz\nhoge -> fuga\n";
 
+    is $run->('alias', ['baz']), "baz is not set alias\n";
+    is $run->('alias', ['foo']), "foo -> baz\n";
+
     $run->('alias', ['foo', 'v0.6.0']);
     $run->('use', ['foo']);
     like $run->('list'), qr/current: v0.6.0/;

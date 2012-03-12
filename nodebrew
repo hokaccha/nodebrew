@@ -210,7 +210,7 @@ sub _cmd_alias {
     # get alias
     elsif ($key) {
         $val = $alias->get($key);
-        print "$key -> $val";
+        print $val ? "$key -> $val\n" : "$key is not set alias\n";
     }
     # get alias all
     else {
@@ -306,7 +306,7 @@ Usage:
     nodebrew help                    Show this message
     nodebrew install <version>       Download and install a <version>
     nodebrew uninstall <version>     Uninstall a version
-    nodebrew use <version>           Modify PATH to use <version>
+    nodebrew use <version>           Use <version>
     nodebrew list                    List installed versions
     nodebrew ls                      Alias for `list`
     nodebrew ls-remote               List remote versions
