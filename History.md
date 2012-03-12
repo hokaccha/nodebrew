@@ -1,7 +1,13 @@
+0.5.0  / 2012-03-12
+====================
+
+* Add subcommand `alias`
+* Add subcommand `unalias`
+
 0.4.3  / 2012-03-09
 ====================
 
-* Added find version `stable`. Closes #13
+* Add find version `stable`. Closes #13
 
 0.4.2  / 2012-01-01
 ====================
