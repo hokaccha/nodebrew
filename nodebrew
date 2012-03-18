@@ -437,8 +437,7 @@ sub new {
     my $data = {};
     if (-e $file) {
         open my $fh, '<', $file or die "Error: $!";
-        my $str = '';
-        while (<$fh>) { $str .= $_ };
+        my $str = do { local $/; <$fh> };
         close $fh;
         $data = Nodebrew::Config::_parse($str);
     }
