@@ -1,0 +1,61 @@
+#compdef nodebrew
+
+typeset -A opt_args
+local context state line ret=1
+
+_arguments -C \
+  '1: :->cmds' \
+  '(1 *): :->args' && return 0
+
+case $state in
+  cmds)
+    local _cmds
+    _cmds=(
+      'help:Show this message'
+      'install:Download and install a version'
+      'uninstall:Uninstall a version'
+      'use:Use version'
+      'list:List installed versions'
+      'ls:Alias for `list`'
+      'ls-remote:List remote versions'
+      'ls-all:List remote and installed versions'
+      'alias:Set alias to version'
+      'unalias:Remove alias'
+      'clean:Remove source file'
+      'selfupdate:Update nodebrew'
+    )
+    _describe -t commands 'nodebrew commands' _cmds && ret=0
+  ;;
+  args)
+    local -a _versions _alias
+    _versions=( $(_call_program commands nodebrew ls 2>/dev/null | grep '^v') )
+    _alias=( $(_call_program commands nodebrew alias 2>/dev/null | sed 's/->.*//') )
+    case $line[1] in
+      use)
+        _describe -t versions 'versions' _versions && ret=0
+        _describe -t alias 'alias' _alias && ret=0
+      ;;
+      uninstall)
+        _describe -t versions 'versions' _versions && ret=0
+      ;;
+      clean)
+        _describe -t versions 'versions' '(${_versions[@]} all)' && ret=0
+      ;;
+      unalias)
+        _describe -t alias 'alias' _alias && ret=0
+      ;;
+      alias)
+        _describe -t alias 'alias' _alias && ret=0
+      ;;
+      install)
+        if ( [[ ${+_remote_versions} -eq 0 ]] || _cache_invalid NODEBREW_versions ) && ! _retrieve_cache NODEBREW_versions; then
+          _remote_versions=($(_call_program commands nodebrew ls-remote 2>/dev/null))
+          _store_cache NODEBREW_versions _remote_versions
+        fi
+        _describe -t remote_versions 'remote versions' _remote_versions && ret=0
+      ;;
+    esac
+  ;;
+esac
+
+return ret
