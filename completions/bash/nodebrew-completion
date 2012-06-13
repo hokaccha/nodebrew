@@ -1,0 +1,43 @@
+# nodebrew-completion
+
+_nodebrew()
+{
+    local opts cur prev
+    opts="alias unalias ls ls-all ls-remote list install use clean selfupdate uninstall help"
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev="${COMP_WORDS[COMP_CWORD-1]}"
+
+    if [ $COMP_CWORD = 1 ]; then
+        COMPREPLY=( $( compgen -W "${opts}" ${cur} ) )
+        return 0
+    elif [ $COMP_CWORD > 1 ];then
+        local _alias _versions
+
+        _versions=$(nodebrew ls 2> /dev/null | grep '^v')
+        _alias=$(nodebrew alias 2> /dev/null | sed 's/->.*//')
+
+        case "${prev}" in
+            use)
+                local _target
+                _target="${_versions} ${_alias}"
+                COMPREPLY=( $(compgen -W "${_target}" ${cur} ) )
+                return 0
+            ;;
+            install)
+                local _remote_versions
+                _remote_versions=$(nodebrew ls-remote 2> /dev/null)
+                COMPREPLY=( $(compgen -W "${_remote_versions}" ${cur} ) )
+                return 0
+            ;;
+            clean|uninstall)
+                COMPREPLY=( $(compgen -W "${_versions}" ${cur} ) )
+                return 0
+            ;;
+            alias|unalias)
+                COMPREPLY=( $(compgen -W "${_alias}" ${cur} ) )
+                return 0
+            ;;
+        esac
+    fi
+}
+complete -F _nodebrew nodebrew
