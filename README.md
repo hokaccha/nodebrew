@@ -105,16 +105,16 @@ Update nodebrew.
 
 ## Commands
 
-    $ nodebrew help                    Show this message
-    $ nodebrew install <version>       Download and install a <version>
-    $ nodebrew uninstall <version>     Uninstall a version
-    $ nodebrew use <version>           Modify PATH to use <version>
-    $ nodebrew list                    List installed versions
-    $ nodebrew ls                      Alias for `list`
-    $ nodebrew ls-remote               List remote versions
-    $ nodebrew ls-all                  List remote and installed versions
-    $ nodebrew alias <key> <version>   Set alias to version
-    $ nodebrew alias <key> <version>   Alias keyword to version
-    $ nodebrew unalias <key>           Remove alias
-    $ nodebrew clean <version> | all   Remove source file
-    $ nodebrew selfupdate              Update nodebrew
+    $ nodebrew help                       Show this message
+    $ nodebrew install <version>          Download and install a <version>
+    $ nodebrew uninstall <version>        Uninstall a version
+    $ nodebrew use <version>              Use <version>
+    $ nodebrew list                       List installed versions
+    $ nodebrew ls                         Alias for `list`
+    $ nodebrew ls-remote                  List remote versions
+    $ nodebrew ls-all                     List remote and installed versions
+    $ nodebrew alias <key> <version>      Set alias to version
+    $ nodebrew unalias <key>              Remove alias
+    $ nodebrew clean <version> | all      Remove source file
+    $ nodebrew selfupdate                 Update nodebrew
+    $ nodebrew migrate-package <version>  Install global NPM packages contained in <version> to current version
