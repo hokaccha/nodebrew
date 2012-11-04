@@ -23,6 +23,7 @@ case $state in
       'unalias:Remove alias'
       'clean:Remove source file'
       'selfupdate:Update nodebrew'
+      'migrate-package:Install global NPM packages contained in version to current version'
     )
     _describe -t commands 'nodebrew commands' _cmds && ret=0
   ;;
@@ -31,7 +32,7 @@ case $state in
     _versions=( $(_call_program commands nodebrew ls 2>/dev/null | grep '^v') )
     _alias=( $(_call_program commands nodebrew alias 2>/dev/null | sed 's/->.*//') )
     case $line[1] in
-      use)
+      use|migrate-package)
         _describe -t versions 'versions' _versions && ret=0
         _describe -t alias 'alias' _alias && ret=0
       ;;

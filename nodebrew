@@ -296,6 +296,39 @@ sub _cmd_selfupdate {
     print "update successfull\n";
 }
 
+sub _cmd_migrate_package {
+    my ($self, $args) = @_;
+    my $version = $args->[0] or return print "required version\n";
+    my $target = "$self->{node_dir}/$version";
+    my $current_version = $self->get_current_version();
+
+    return print "$version is not installed\n" unless -e $target;
+    return print "$version is currently in use\n" if $version eq $current_version;
+
+    `nodebrew use $version`;
+    my $npm_root = `npm -g root`;
+    $npm_root =~ s/[\r\n]//g;
+    my @installed = grep{ $_ !~ /^npm@/ } map{ m|\:(.+)\:$|;$1} grep{ m|^${npm_root}/[^/]+$| } split "\n", `npm -g -p ll`;
+    `nodebrew use $current_version`;
+    my (@success, @fail);
+    foreach my $package (@installed){
+        print "Try to install $package ...\n";
+        my $result = system qq[npm install -g $package];
+        if( $result ){
+            push @fail, $package;
+        }
+        else{
+            push @success, $package;
+        }
+    }
+    if( @success ){
+        print "Install succeeded:\n", join( "\n", @success ), "\n\n";
+    }
+    if( @fail ){
+        print "Install failed:\n", join( "\n", @fail ), "\n\n";
+    }
+}
+
 sub _cmd_help {
     my ($self, $args) = @_;
 
@@ -303,18 +336,19 @@ sub _cmd_help {
 nodebrew $VERSION
 
 Usage:
-    nodebrew help                    Show this message
-    nodebrew install <version>       Download and install a <version>
-    nodebrew uninstall <version>     Uninstall a version
-    nodebrew use <version>           Use <version>
-    nodebrew list                    List installed versions
-    nodebrew ls                      Alias for `list`
-    nodebrew ls-remote               List remote versions
-    nodebrew ls-all                  List remote and installed versions
-    nodebrew alias <key> <version>   Set alias to version
-    nodebrew unalias <key>           Remove alias
-    nodebrew clean <version> | all   Remove source file
-    nodebrew selfupdate              Update nodebrew
+    nodebrew help                       Show this message
+    nodebrew install <version>          Download and install a <version>
+    nodebrew uninstall <version>        Uninstall a version
+    nodebrew use <version>              Use <version>
+    nodebrew list                       List installed versions
+    nodebrew ls                         Alias for `list`
+    nodebrew ls-remote                  List remote versions
+    nodebrew ls-all                     List remote and installed versions
+    nodebrew alias <key> <version>      Set alias to version
+    nodebrew unalias <key>              Remove alias
+    nodebrew clean <version> | all      Remove source file
+    nodebrew selfupdate                 Update nodebrew
+    nodebrew migrate-package <version>  Install global NPM packages contained in <version> to current version
 
 Example:
     nodebrew install v0.6.0     Install a specific version number
