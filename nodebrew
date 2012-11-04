@@ -298,18 +298,23 @@ sub _cmd_selfupdate {
 
 sub _cmd_migrate_package {
     my ($self, $args) = @_;
-    my $version = $args->[0] or return print "required version\n";
+
+    my $alias = Nodebrew::Config->new($self->{alias_file});
+    my $orig_version = _v($alias->get($args->[0])) || _v($args->[0])
+        or return print "required version\n";
+    my $version = Nodebrew::Utils::find_version(
+        $orig_version, $self->get_local_version()
+    ) or return print "$orig_version is not installed\n";
+
     my $target = "$self->{node_dir}/$version";
-    my $current_version = $self->get_current_version();
+    my $module_dir = "$target/lib/node_modules";
+    my @installed;
 
-    return print "$version is not installed\n" unless -e $target;
-    return print "$version is currently in use\n" if $version eq $current_version;
+    opendir my $dh, $module_dir or die $!;
+    while (my $dir = readdir $dh) {
+        push @installed, "$module_dir/$dir" unless $dir =~ /^(\.\.?|npm)$/;
+    }
 
-    `nodebrew use $version`;
-    my $npm_root = `npm -g root`;
-    $npm_root =~ s/[\r\n]//g;
-    my @installed = grep{ $_ !~ /^npm@/ } map{ m|\:(.+)\:$|;$1} grep{ m|^${npm_root}/[^/]+$| } split "\n", `npm -g -p ll`;
-    `nodebrew use $current_version`;
     my (@success, @fail);
     foreach my $package (@installed){
         print "Try to install $package ...\n";
