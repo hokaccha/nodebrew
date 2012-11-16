@@ -1,9 +1,11 @@
 0.5.2  / 2012-11-04
 ====================
+
 * Fix `migrate-package` command dose not work old npm. Closes #20
 
 0.5.1  / 2012-11-04
 ====================
+
 * Add subcommand `migrate-package` (hideo55)
 
 0.5.0  / 2012-03-12
