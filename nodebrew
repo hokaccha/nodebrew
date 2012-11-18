@@ -468,6 +468,24 @@ sub find_version {
     pop @ret;
 }
 
+sub parse_args {
+    my $opts = {};
+    my @args;
+
+    for (@_) {
+        if ($_ =~ m/^-(\w)/) {
+            $opts->{$1} = 1;
+        }
+        else {
+            push @args, $_;
+        }
+    }
+
+    my $command = shift @args;
+
+    return ($command, \@args, $opts);
+}
+
 package Nodebrew::Config;
 
 sub new {
