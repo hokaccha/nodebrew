@@ -54,12 +54,12 @@ sub init {
 }
 
 sub run {
-    my ($self, $command, $args) = @_;
+    my ($self, $command, $args, $opts) = @_;
 
     $command ||= '';
     $command =~ s/-/_/g;
     if (my $cmd = $self->can("_cmd_$command")) {
-        $cmd->($self, $args);
+        $cmd->($self, $args, $opts);
     }
     else {
         $self->_cmd_help($args);
@@ -631,8 +631,7 @@ sub main {
     my $fetcher_type = `which curl` ? 'curl' :
                        `which wget` ? 'wget' :
                         die 'Need curl or wget';
-    my $command = shift @ARGV;
-    my $args = \@ARGV;
+    my ($command, $args, $opts) = Nodebrew::Utils::parse_args(@ARGV);
 
     Nodebrew->new(
         brew_dir        => $brew_dir,
@@ -643,7 +642,7 @@ sub main {
             "http://nodejs.org/dist/{version}/node-{version}.tar.gz",
             "http://nodejs.org/dist/node-{version}.tar.gz",
         ],
-    )->run($command, $args);
+    )->run($command, $args, $opts);
 }
 
 main() unless caller;
