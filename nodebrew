@@ -86,7 +86,8 @@ sub _cmd_use {
 }
 
 sub _cmd_install {
-    my ($self, $args) = @_;
+    my ($self, $args, $opts) = @_;
+
     my $version = _v($args->[0]) or return print "required version\n";
 
     if ($version !~ m/v\d+\.\d+\.\d+/) {
@@ -99,41 +100,65 @@ sub _cmd_install {
     return print "$version is already installed\n"
         if -e "$self->{node_dir}/$version";
 
-    my $tarball;
-    my @tarballs = @{ $self->{tarballs} };
-    for (@tarballs) {
-        $_ =~ s/{version}/$version/g;
-        if ($self->{fetcher}->fetch_able($_)) {
-            $tarball = $_;
-            last;
-        }
-    }
-    return print "$version is not found\n" unless $tarball;
+    if ($opts->{p}) {
+        my ($platform, $arch) = Nodebrew::Utils::system_info();
+        my $tarball = "http://nodejs.org/dist/$version/node-$version-$platform-$arch.tar.gz";
+        return print "$tarball is not found"
+            unless $self->{fetcher}->fetch_able($tarball);
 
-    my $src_path = "$self->{src_dir}/node-$version";
-    if (!-d $src_path) {
-        $self->_cmd_clean([$version]);
+        # TODO: clean
+
         print "fetch: $tarball\n";
         $self->{fetcher}->download(
             $tarball,
-            "$self->{src_dir}/node-$version.tar.gz"
+            "$self->{src_dir}/node-$version-$platform-$arch.tar.gz"
         ) or die "download faild: $tarball";
 
         system qq[
             cd "$self->{src_dir}" &&
-            tar -xzf "node-$version.tar.gz"
+            tar -xzf "node-$version-$platform-$arch.tar.gz" &&
+            mv "node-$version-$platform-$arch" "$self->{node_dir}/$version"
         ];
+
+        print "install success\n";
     }
     else {
-        print "Install using cache.\n\n";
-    }
+        my $tarball;
+        my @tarballs = @{ $self->{tarballs} };
+        for (@tarballs) {
+            $_ =~ s/{version}/$version/g;
+            if ($self->{fetcher}->fetch_able($_)) {
+                $tarball = $_;
+                last;
+            }
+        }
+        return print "$version is not found\n" unless $tarball;
 
-    system qq[
-        cd "$src_path" &&
-        ./configure --prefix="$self->{node_dir}/$version" &&
-        make &&
-        make install
-    ];
+        my $src_path = "$self->{src_dir}/node-$version";
+        if (!-d $src_path) {
+            $self->_cmd_clean([$version]);
+            print "fetch: $tarball\n";
+            $self->{fetcher}->download(
+                $tarball,
+                "$self->{src_dir}/node-$version.tar.gz"
+            ) or die "download faild: $tarball";
+
+            system qq[
+                cd "$self->{src_dir}" &&
+                tar -xzf "node-$version.tar.gz"
+            ];
+        }
+        else {
+            print "Install using cache.\n\n";
+        }
+
+        system qq[
+            cd "$src_path" &&
+            ./configure --prefix="$self->{node_dir}/$version" &&
+            make &&
+            make install
+        ];
+    }
 }
 
 sub _cmd_uninstall {
@@ -423,6 +448,8 @@ sub _v {
 
 package Nodebrew::Utils;
 
+use POSIX qw/uname/;
+
 sub sort_version {
     my $version = shift;
 
@@ -484,6 +511,13 @@ sub parse_args {
     my $command = shift @args;
 
     return ($command, \@args, $opts);
+}
+
+sub system_info {
+    my ($sysname, $machine) = (uname)[0, 4];
+    my $arch = ($machine =~ m/x86_64/) ? 'x86' : 'x64';
+
+    return (lc $sysname, $arch);
 }
 
 package Nodebrew::Config;
