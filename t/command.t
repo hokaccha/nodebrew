@@ -14,6 +14,15 @@ require 'nodebrew';
 my $data_dir = "$FindBin::Bin/data";
 my $brew_dir = "$FindBin::Bin/.nodebrew";
 
+{
+    no warnings;
+    *Nodebrew::error_and_exit = sub {
+        my $msg = shift;
+        print "$msg\n";
+        die;
+    };
+}
+
 sub clean {
     open my $fh, '>', "$data_dir/nodebrew";
     print $fh 'nodebrew source';
@@ -39,7 +48,9 @@ sub get_run {
     return sub {
         my ($command, $args) = @_;
         $capture->start;
-        $nodebrew->run($command, $args);
+        eval {
+            $nodebrew->run($command, $args);
+        };
         $capture->stop;
         my $ret = '';
         while (my $line = $capture->read) {
@@ -117,7 +128,7 @@ sub run_test {
     $run->('install', ['latest']);
     like $run->('list'), qr/v0.6.1/;
 
-    is $run->('install', []), "required version\n";
+    is $run->('install', []), "version is required\n";
 
     # clean
     is $run->('clean', ['v0.1.1']), "clean v0.1.1\n";
@@ -143,7 +154,7 @@ sub run_test {
     is $run->('clean', ['v0.1.1']), "v0.1.1 is already cleaned\n";
     is $run->('clean', ['0.1.1']), "v0.1.1 is already cleaned\n";
     is $run->('clean', ['foo']), "foo is already cleaned\n";
-    is $run->('clean', []), "required version\n";
+    is $run->('clean', []), "version is required\n";
 
     # use
     $run->('use', ['v0.1.1']);
@@ -171,7 +182,7 @@ sub run_test {
     is $run->('use', ['foo']), "foo is not installed\n";
     like $run->('list'), qr/current: v0.6.1/;
 
-    is $run->('use', []), "required version\n";
+    is $run->('use', []), "version is required\n";
 
     # ls
     is $run->('list'), $run->('ls');
@@ -217,7 +228,7 @@ sub run_test {
     is $run->('unalias', ['foo']), "remove foo\n";
     is $run->('alias'), "0.6 -> 0.6.x\nhoge -> fuga\n";
 
-    is $run->('unalias', ['foo']), "not register foo\n";
+    is $run->('unalias', ['foo']), "foo is not defined\n";
 
     # uninstall
     is $run->('uninstall', ['v0.6.1']), "v0.6.1 uninstalled\n";
@@ -231,7 +242,7 @@ sub run_test {
     is $run->('uninstall', ['0.6.0']), "v0.6.0 uninstalled\n"; # without v
     ok !-e "$nodebrew->{node_dir}/v0.6.0";
 
-    is $run->('uninstall', []), "required version\n";
+    is $run->('uninstall', []), "version is required\n";
 
     # help
     like $run->('help'), qr/Usage:/;

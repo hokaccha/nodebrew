@@ -71,10 +71,10 @@ sub _cmd_use {
 
     my $alias = Nodebrew::Config->new($self->{alias_file});
     my $orig_version = _v($alias->get($args->[0])) || _v($args->[0])
-        or return print "required version\n";
+        or error_and_exit('version is required');
     my $version = Nodebrew::Utils::find_version(
         $orig_version, $self->get_local_version()
-    ) or return print "$orig_version is not installed\n";
+    ) or error_and_exit("$orig_version is not installed");
 
     my $target = "$self->{node_dir}/$version";
     my $nodebrew_path = "$target/bin/nodebrew";
@@ -88,7 +88,7 @@ sub _cmd_use {
 sub _cmd_install {
     my ($self, $args, $opts) = @_;
 
-    my $version = _v($args->[0]) or return print "required version\n";
+    my $version = _v($args->[0]) or error_and_exit('version is required');
 
     if ($version !~ m/v\d+\.\d+\.\d+/) {
         $version = Nodebrew::Utils::find_version(
@@ -96,14 +96,14 @@ sub _cmd_install {
         );
     }
 
-    return print "version not found\n" unless $version;
-    return print "$version is already installed\n"
+    error_and_exit('version not found') unless $version;
+    error_and_exit("$version is already installed")
         if -e "$self->{node_dir}/$version";
 
     if ($opts->{p}) {
         my ($platform, $arch) = Nodebrew::Utils::system_info();
         my $tarball = "http://nodejs.org/dist/$version/node-$version-$platform-$arch.tar.gz";
-        return print "$tarball is not found"
+        error_and_exit("$tarball is not found")
             unless $self->{fetcher}->fetch_able($tarball);
 
         # TODO: clean
@@ -112,7 +112,7 @@ sub _cmd_install {
         $self->{fetcher}->download(
             $tarball,
             "$self->{src_dir}/node-$version-$platform-$arch.tar.gz"
-        ) or die "download faild: $tarball";
+        ) or error_and_exit("download faild: $tarball");
 
         system qq[
             cd "$self->{src_dir}" &&
@@ -132,7 +132,7 @@ sub _cmd_install {
                 last;
             }
         }
-        return print "$version is not found\n" unless $tarball;
+        error_and_exit("$version is not found") unless $tarball;
 
         my $src_path = "$self->{src_dir}/node-$version";
         if (!-d $src_path) {
@@ -141,7 +141,7 @@ sub _cmd_install {
             $self->{fetcher}->download(
                 $tarball,
                 "$self->{src_dir}/node-$version.tar.gz"
-            ) or die "download faild: $tarball";
+            ) or error_and_exit("download faild: $tarball");
 
             system qq[
                 cd "$self->{src_dir}" &&
@@ -161,13 +161,16 @@ sub _cmd_install {
     }
 }
 
+sub _cmd_install_binary {
+}
+
 sub _cmd_uninstall {
     my ($self, $args) = @_;
-    my $version = _v($args->[0]) or return print "required version\n";
+    my $version = _v($args->[0]) or return print "version is required\n";
     my $target = "$self->{node_dir}/$version";
     my $current_version = $self->get_current_version();
 
-    return print "$version is not installed\n" unless -e $target;
+    error_and_exit("$version is not installed") unless -e $target;
     rmtree $target;
     if ($current_version eq $version) {
         $self->use_default();
@@ -260,7 +263,7 @@ sub _cmd_unalias {
         print "remove $key\n";
     }
     else {
-        print "not register $key\n";
+        error_and_exit("$key is not defined");
     }
 }
 
@@ -290,7 +293,7 @@ sub _cmd_setup {
 
 sub _cmd_clean {
     my ($self, $args) = @_;
-    my $version = _v($args->[0]) or return print "required version\n";
+    my $version = _v($args->[0]) or error_and_exit('version is required');
 
     if ($version eq 'all') {
         opendir my $dh, $self->{src_dir} or die $!;
@@ -326,10 +329,10 @@ sub _cmd_migrate_package {
 
     my $alias = Nodebrew::Config->new($self->{alias_file});
     my $orig_version = _v($alias->get($args->[0])) || _v($args->[0])
-        or return print "required version\n";
+        or error_and_exit('version is required');
     my $version = Nodebrew::Utils::find_version(
         $orig_version, $self->get_local_version()
-    ) or return print "$orig_version is not installed\n";
+    ) or error_and_exit("$orig_version is not installed");
 
     my $target = "$self->{node_dir}/$version";
     my $module_dir = "$target/lib/node_modules";
@@ -437,6 +440,13 @@ sub get_remote_version {
     }
 
     return \@versions;
+}
+
+sub error_and_exit {
+    my $msg = shift;
+
+    print "$msg\n";
+    exit 1;
 }
 
 sub _v {
