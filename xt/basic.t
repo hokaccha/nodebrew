@@ -5,11 +5,6 @@ use FindBin;
 use Cwd 'abs_path';
 use File::Path qw/rmtree/;
 
-unless ($ENV{LIVE_TEST}) {
-    plan skip_all => 'Live test';
-    exit;
-}
-
 my $nodebrew_root = "$FindBin::Bin/.nodebrew";
 my $nodebrew = abs_path("$FindBin::Bin/../nodebrew");
 my $command = "NODEBREW_ROOT=$nodebrew_root $nodebrew";
