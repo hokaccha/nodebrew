@@ -515,7 +515,7 @@ sub parse_args {
 
 sub system_info {
     my ($sysname, $machine) = (uname)[0, 4];
-    my $arch = ($machine =~ m/x86_64/) ? 'x86' : 'x64';
+    my $arch = ($machine =~ m/x86_64/) ? 'x64' : 'x86';
 
     return (lc $sysname, $arch);
 }
