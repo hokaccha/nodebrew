@@ -90,33 +90,22 @@ sub _cmd_install {
     my ($self, $args) = @_;
 
     my $version = $self->get_install_version($args->[0]);
-    my $tarball;
-    my @tarballs = @{ $self->{tarballs} };
-    for (@tarballs) {
-        my $url = Nodebrew::Utils::apply_vars($_, { version  => $version });
-        if ($self->{fetcher}->fetch_able($url)) {
-            $tarball = $url;
-            last;
-        }
-    }
-    error_and_exit("$version is not found") unless $tarball;
+    my $tarball_url = $self->get_tarball($self->{tarballs}, $version);
+    my $src_dir = "$self->{src_dir}/$version";
+    my $target_name = "node-$version";
+    my $tarball_path = "$src_dir/$target_name.tar.gz";
 
     $self->clean($version);
-    mkdir "$self->{src_dir}/$version";
+    mkdir $src_dir;
 
-    print "fetch: $tarball\n";
-    $self->{fetcher}->download(
-        $tarball,
-        "$self->{src_dir}/$version/node-$version.tar.gz"
-    ) or error_and_exit("download faild: $tarball");
+    print "fetch: $tarball_url\n";
+    $self->{fetcher}->download($tarball_url, $tarball_path)
+        or error_and_exit("download faild: $tarball_url");
 
-    system qq[
-        cd "$self->{src_dir}/$version" &&
-        tar -xzf "node-$version.tar.gz"
-    ];
+    Nodebrew::Utils::extract_tar($tarball_path, $src_dir);
 
     system qq[
-        cd "$self->{src_dir}/$version/node-$version" &&
+        cd "$src_dir/$target_name" &&
         ./configure --prefix="$self->{node_dir}/$version" &&
         make &&
         make install
@@ -128,36 +117,24 @@ sub _cmd_install_binary {
 
     my $version = $self->get_install_version($args->[0]);
     my ($platform, $arch) = Nodebrew::Utils::system_info();
-    my $tarball;
-    my @tarballs = @{ $self->{tarballs_binary} };
-    for (@tarballs) {
-        my $url = Nodebrew::Utils::apply_vars($_, {
-            version  => $version,
-            platform => $platform,
-            arch     => $arch,
-        });
-        if ($self->{fetcher}->fetch_able($url)) {
-            $tarball = $url;
-            last;
-        }
-    }
-
-    error_and_exit("$version is not found") unless $tarball;
+    my $tarball_url = $self->get_tarball($self->{tarballs_binary}, $version, {
+        platform => $platform,
+        arch     => $arch,
+    });
+    my $src_dir = "$self->{src_dir}/$version";
+    my $target_name = "node-$version-$platform-$arch";
+    my $tarball_path = "$src_dir/$target_name.tar.gz";
 
     $self->clean($version);
-    mkdir "$self->{src_dir}/$version";
+    mkdir $src_dir;
 
-    print "fetch: $tarball\n";
-    $self->{fetcher}->download(
-        $tarball,
-        "$self->{src_dir}/$version/node-$version-$platform-$arch.tar.gz"
-    ) or error_and_exit("download faild: $tarball");
+    print "fetch: $tarball_url\n";
+    $self->{fetcher}->download($tarball_url, $tarball_path)
+        or error_and_exit("download faild: $tarball_url");
 
-    system qq[
-        cd "$self->{src_dir}/$version" &&
-        tar -xzf "node-$version-$platform-$arch.tar.gz" &&
-        mv "node-$version-$platform-$arch" "$self->{node_dir}/$version"
-    ];
+    Nodebrew::Utils::extract_tar($tarball_path, $src_dir);
+
+    rename "$src_dir/$target_name", "$self->{node_dir}/$version";
 
     print "install success\n";
 }
@@ -389,6 +366,31 @@ sub get_install_version {
     return $version;
 }
 
+sub get_tarball {
+    my ($self, $tarballs, $version, $vars) = @_;
+
+    my $tarball;
+    my $msg = '';
+
+    $vars ||= {};
+    $vars->{version} = $version;
+
+    for (@$tarballs) {
+        my $url = Nodebrew::Utils::apply_vars($_, $vars);
+        if ($self->{fetcher}->fetch_able($url)) {
+            $tarball = $url;
+            last;
+        }
+        else {
+            $msg .= "\nCan not fetched: $url";
+        }
+    }
+
+    error_and_exit("$version is not found\n$msg") unless $tarball;
+
+    return $tarball;
+}
+
 sub clean {
     my ($self, $version) = @_;
 
@@ -476,6 +478,8 @@ sub _v {
 package Nodebrew::Utils;
 
 use POSIX qw/uname/;
+use Cwd 'getcwd';
+use Archive::Tar;
 
 sub sort_version {
     my $version = shift;
@@ -557,6 +561,18 @@ sub apply_vars {
     }
 
     return $str;
+}
+
+sub extract_tar {
+    my ($filepath, $outdir) = @_;
+
+    my $cwd = getcwd;
+    my $tar = Archive::Tar->new;
+
+    chdir($outdir);
+    $tar->read($filepath);
+    $tar->extract;
+    chdir($cwd);
 }
 
 package Nodebrew::Config;
@@ -713,7 +729,7 @@ sub main {
         fetcher         => Nodebrew::Fetcher::get($fetcher_type),
         tarballs        => [
             "http://nodejs.org/dist/#{version}/node-#{version}.tar.gz",
-            "http://nodejs.org/dist/node-{version}.tar.gz",
+            "http://nodejs.org/dist/node-#{version}.tar.gz",
         ],
         tarballs_binary => [
             "http://nodejs.org/dist/#{version}/node-#{version}-#{platform}-#{arch}.tar.gz",

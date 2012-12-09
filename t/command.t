@@ -19,7 +19,7 @@ my $brew_dir = "$FindBin::Bin/.nodebrew";
     *Nodebrew::error_and_exit = sub {
         my $msg = shift;
         print "$msg\n";
-        die;
+        die; # instead of exit
     };
 
     no warnings;
@@ -57,6 +57,7 @@ sub get_run {
             $nodebrew->run($command, $args);
         };
         $capture->stop;
+        warn $@ if $@;
         my $ret = '';
         while (my $line = $capture->read) {
             $ret .= $line;
@@ -131,8 +132,8 @@ sub run_test {
     like $run->('list'), qr/current: none/;
     is $run->('install', ['v0.1.1']), "v0.1.1 is already installed\n";
     is $run->('install', ['0.1.1']), "v0.1.1 is already installed\n";
-    is $run->('install', ['v0.1.3']), "v0.1.3 is not found\n";
-    is $run->('install', ['0.1.3']), "v0.1.3 is not found\n";
+    like $run->('install', ['v0.1.3']), qr/v0.1.3 is not found/;
+    like $run->('install', ['0.1.3']), qr/v0.1.3 is not found/;
 
     $run->('install', ['v0.1.x']);
     like $run->('list'), qr/v0.1.2/;
@@ -153,7 +154,7 @@ sub run_test {
     like $run->('list'), qr/v0.4.0/;
 
     is $run->('install-binary', ['v0.4.0']), "v0.4.0 is already installed\n";
-    is $run->('install-binary', ['v0.4.1']), "v0.4.1 is not found\n";
+    like $run->('install-binary', ['v0.4.1']), qr/v0.4.1 is not found/;
 
     # clean
     is $run->('clean', ['v0.1.1']), "clean v0.1.1\n";
