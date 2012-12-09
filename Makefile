@@ -1,5 +1,5 @@
 test:
-	@prove -lvr
+	@prove -lvr t
 
 install:
 	@./nodebrew setup
