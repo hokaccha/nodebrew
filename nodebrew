@@ -101,23 +101,22 @@ sub _cmd_install {
     }
     error_and_exit("$version is not found") unless $tarball;
 
-    my $src_path = "$self->{src_dir}/node-$version";
-
-    $self->clean();
+    $self->clean($version);
+    mkdir "$self->{src_dir}/$version";
 
     print "fetch: $tarball\n";
     $self->{fetcher}->download(
         $tarball,
-        "$self->{src_dir}/node-$version.tar.gz"
+        "$self->{src_dir}/$version/node-$version.tar.gz"
     ) or error_and_exit("download faild: $tarball");
 
     system qq[
-        cd "$self->{src_dir}" &&
+        cd "$self->{src_dir}/$version" &&
         tar -xzf "node-$version.tar.gz"
     ];
 
     system qq[
-        cd "$src_path" &&
+        cd "$self->{src_dir}/$version/node-$version" &&
         ./configure --prefix="$self->{node_dir}/$version" &&
         make &&
         make install
@@ -145,16 +144,17 @@ sub _cmd_install_binary {
 
     error_and_exit("$version is not found") unless $tarball;
 
-    $self->clean();
+    $self->clean($version);
+    mkdir "$self->{src_dir}/$version";
 
     print "fetch: $tarball\n";
     $self->{fetcher}->download(
         $tarball,
-        "$self->{src_dir}/node-$version-$platform-$arch.tar.gz"
+        "$self->{src_dir}/$version/node-$version-$platform-$arch.tar.gz"
     ) or error_and_exit("download faild: $tarball");
 
     system qq[
-        cd "$self->{src_dir}" &&
+        cd "$self->{src_dir}/$version" &&
         tar -xzf "node-$version-$platform-$arch.tar.gz" &&
         mv "node-$version-$platform-$arch" "$self->{node_dir}/$version"
     ];
@@ -291,28 +291,11 @@ sub _cmd_setup {
 
 sub _cmd_clean {
     my ($self, $args) = @_;
+
     my $version = _v($args->[0]) or error_and_exit('version is required');
 
-    if ($version eq 'all') {
-        opendir my $dh, $self->{src_dir} or die $!;
-        while (my $file = readdir $dh) {
-            next if $file =~ m/^\./;
-            my $path = "$self->{src_dir}/$file";
-            unlink $path if -f $path;
-            rmtree $path if -d $path;
-        }
-        print "clean $version\n";
-    }
-    elsif (-e "$self->{src_dir}/node-$version.tar.gz" ||
-           -e "$self->{src_dir}/node-$version") {
-        unlink "$self->{src_dir}/node-$version.tar.gz";
-        rmtree "$self->{src_dir}/node-$version";
-        print "clean $version\n";
-    }
-    else {
-        print "$version is already cleaned\n";
-    }
-
+    $self->clean($version);
+    print "clean $version\n";
 }
 
 sub _cmd_selfupdate {
@@ -407,14 +390,19 @@ sub get_install_version {
 }
 
 sub clean {
-    my $self = shift;
+    my ($self, $version) = @_;
 
-    opendir my $dh, $self->{src_dir} or die $!;
-    while (my $file = readdir $dh) {
-        next if $file =~ m/^\./;
-        my $path = "$self->{src_dir}/$file";
-        unlink $path if -f $path;
-        rmtree $path if -d $path;
+    if ($version eq 'all') {
+        opendir my $dh, $self->{src_dir} or return;
+        while (my $file = readdir $dh) {
+            next if $file =~ m/^\./;
+            my $path = "$self->{src_dir}/$file";
+            unlink $path if -f $path;
+            rmtree $path if -d $path;
+        }
+    }
+    elsif (-d "$self->{src_dir}/$version") {
+        rmtree "$self->{src_dir}/$version";
     }
 }
 

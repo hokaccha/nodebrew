@@ -115,16 +115,18 @@ sub run_test {
     is readlink "$nodebrew->{current}", "$nodebrew->{default_dir}";
 
     ok !-e "$nodebrew->{node_dir}/v0.1.1";
-    ok !-e "$nodebrew->{src_dir}/node-v0.1.1.tar.gz";
-    ok !-e "$nodebrew->{src_dir}/node-v0.1.1";
+    ok !-e "$nodebrew->{src_dir}/v0.1.1";
+    ok !-e "$nodebrew->{src_dir}/v0.1.1/node-v0.1.1.tar.gz";
+    ok !-e "$nodebrew->{src_dir}/v0.1.1/node-v0.1.1";
     unlike $run->('list'), qr/v0.1.1/;
     like $run->('list'), qr/not installed/;
 
     # install
     $run->('install', ['v0.1.1']);
     ok -e "$nodebrew->{node_dir}/v0.1.1";
-    ok -e "$nodebrew->{src_dir}/node-v0.1.1.tar.gz";
-    ok -e "$nodebrew->{src_dir}/node-v0.1.1";
+    ok -e "$nodebrew->{src_dir}/v0.1.1";
+    ok -e "$nodebrew->{src_dir}/v0.1.1/node-v0.1.1.tar.gz";
+    ok -e "$nodebrew->{src_dir}/v0.1.1/node-v0.1.1";
     like $run->('list'), qr/v0.1.1/;
     like $run->('list'), qr/current: none/;
     is $run->('install', ['v0.1.1']), "v0.1.1 is already installed\n";
@@ -143,41 +145,31 @@ sub run_test {
 
     is $run->('install', []), "version is required\n";
 
-    # clean
-    is $run->('clean', ['v0.1.1']), "clean v0.1.1\n";
-    ok !-e "$nodebrew->{src_dir}/node-v0.1.1.tar.gz";
-    ok !-e "$nodebrew->{src_dir}/node-v0.1.1";
-    ok -e "$nodebrew->{src_dir}/node-v0.1.2.tar.gz";
-    ok -e "$nodebrew->{src_dir}/node-v0.1.2";
-    ok -e "$nodebrew->{src_dir}/node-v0.6.0.tar.gz";
-    ok -e "$nodebrew->{src_dir}/node-v0.6.0";
-    ok -e "$nodebrew->{src_dir}/node-v0.6.1.tar.gz";
-    ok -e "$nodebrew->{src_dir}/node-v0.6.1";
-
-    is $run->('clean', ['0.6.0']), "clean v0.6.0\n"; # without 'v'
-    ok !-e "$nodebrew->{src_dir}/node-v0.6.0.tar.gz";
-    ok !-e "$nodebrew->{src_dir}/node-v0.6.0";
-
-    is $run->('clean', ['all']), "clean all\n";
-    ok !-e "$nodebrew->{src_dir}/node-v0.1.2.tar.gz";
-    ok !-e "$nodebrew->{src_dir}/node-v0.1.2";
-    ok !-e "$nodebrew->{src_dir}/node-v0.6.1.tar.gz";
-    ok !-e "$nodebrew->{src_dir}/node-v0.6.1";
-
-    is $run->('clean', ['v0.1.1']), "v0.1.1 is already cleaned\n";
-    is $run->('clean', ['0.1.1']), "v0.1.1 is already cleaned\n";
-    is $run->('clean', ['foo']), "foo is already cleaned\n";
-    is $run->('clean', []), "version is required\n";
-
     # install binary
     $run->('install-binary', ['v0.4.0']);
     ok -e "$nodebrew->{node_dir}/v0.4.0";
     ok -e "$nodebrew->{node_dir}/v0.4.0/binary";
-    ok -e "$nodebrew->{src_dir}/node-v0.4.0-linux-x86.tar.gz";
+    ok -e "$nodebrew->{src_dir}/v0.4.0/node-v0.4.0-linux-x86.tar.gz";
     like $run->('list'), qr/v0.4.0/;
 
     is $run->('install-binary', ['v0.4.0']), "v0.4.0 is already installed\n";
     is $run->('install-binary', ['v0.4.1']), "v0.4.1 is not found\n";
+
+    # clean
+    is $run->('clean', ['v0.1.1']), "clean v0.1.1\n";
+    ok !-e "$nodebrew->{src_dir}/v0.1.1";
+    ok -e "$nodebrew->{src_dir}/v0.1.2";
+    ok -e "$nodebrew->{src_dir}/v0.6.0";
+    ok -e "$nodebrew->{src_dir}/v0.6.1";
+
+    is $run->('clean', ['0.6.0']), "clean v0.6.0\n"; # without 'v'
+    ok !-e "$nodebrew->{src_dir}/v0.6.0";
+
+    is $run->('clean', ['all']), "clean all\n";
+    ok !-e "$nodebrew->{src_dir}/v0.1.2";
+    ok !-e "$nodebrew->{src_dir}/v0.6.1";
+
+    is $run->('clean', []), "version is required\n";
 
     # use
     $run->('use', ['v0.1.1']);
