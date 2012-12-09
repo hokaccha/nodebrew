@@ -12,7 +12,8 @@ case $state in
     local _cmds
     _cmds=(
       'help:Show this message'
-      'install:Download and install a version'
+      'install:Download and install a version (compile from source)'
+      'install-binary:Download and install a version (binary file)'
       'uninstall:Uninstall a version'
       'use:Use version'
       'list:List installed versions'
@@ -48,7 +49,7 @@ case $state in
       alias)
         _describe -t alias 'alias' _alias && ret=0
       ;;
-      install)
+      install|install-binary)
         if ( [[ ${+_remote_versions} -eq 0 ]] || _cache_invalid NODEBREW_versions ) && ! _retrieve_cache NODEBREW_versions; then
           _remote_versions=($(_call_program commands nodebrew ls-remote 2>/dev/null))
           _store_cache NODEBREW_versions _remote_versions

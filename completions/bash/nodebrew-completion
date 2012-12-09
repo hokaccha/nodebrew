@@ -3,7 +3,7 @@
 _nodebrew()
 {
     local opts cur prev
-    opts="alias unalias ls ls-all ls-remote list install uninstall use clean selfupdate migrate-package help"
+    opts="alias unalias ls ls-all ls-remote list install install-binary uninstall use clean selfupdate migrate-package help"
     cur="${COMP_WORDS[COMP_CWORD]}"
     prev="${COMP_WORDS[COMP_CWORD-1]}"
 
@@ -21,7 +21,7 @@ _nodebrew()
                 target="${_versions} ${_alias}"
                 COMPREPLY=( $(compgen -W "${target}" ${cur} ) )
             ;;
-            install)
+            install|install-binary)
                 local _remote_versions
                 _remote_versions=$(nodebrew ls-remote 2> /dev/null)
                 COMPREPLY=( $(compgen -W "${_remote_versions}" ${cur} ) )
