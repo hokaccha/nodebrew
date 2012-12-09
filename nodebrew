@@ -554,7 +554,7 @@ sub system_info {
 sub apply_vars {
     my ($str, $hash) = @_;
 
-    for my $key (keys $hash) {
+    for my $key (keys %$hash) {
         my $val = $hash->{$key};
 
         $str =~ s/#{$key}/$val/g;
