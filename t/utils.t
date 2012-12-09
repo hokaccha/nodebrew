@@ -104,4 +104,9 @@ is Nodebrew::Utils::find_version('stable', [
     is_deeply $opt, { p => 1 };
 }
 
+is Nodebrew::Utils::apply_vars('key-#{key1}-#{key2}-#{key1}', {
+    key1 => 'val1',
+    key2 => 'val2',
+}), 'key-val1-val2-val1';
+
 done_testing;

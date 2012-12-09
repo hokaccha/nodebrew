@@ -21,6 +21,11 @@ my $brew_dir = "$FindBin::Bin/.nodebrew";
         print "$msg\n";
         die;
     };
+
+    no warnings;
+    *Nodebrew::Utils::system_info = sub {
+        return ('linux', 'x86');
+    };
 }
 
 sub clean {
@@ -69,8 +74,12 @@ sub run_test {
         fetcher => Nodebrew::Fetcher::get('curl'),
         tarballs => [
             "$url/notfound",
-            "$url/install/node-{version}.tar.gz",
+            "$url/install/node-#{version}.tar.gz",
         ],
+        tarballs_binary => [
+            "$url/notfound",
+            "$url/install/node-#{version}-#{platform}-#{arch}.tar.gz",
+        ]
     );
     my $run = get_run($nodebrew);
     mkdir $brew_dir;
@@ -85,6 +94,10 @@ sub run_test {
         `cp -R $data_dir/node-base $data_dir/install/node-$_`;
         `cd $data_dir/install && tar -zcf node-$_.tar.gz node-$_`; 
     }
+
+    # binary
+    `cp -R $data_dir/node-binary-base $data_dir/install/node-v0.4.0-linux-x86`;
+    `cd $data_dir/install && tar -zcf node-v0.4.0-linux-x86.tar.gz node-v0.4.0-linux-x86`;
 
     # before
     ok !-e "$nodebrew->{brew_dir}/nodebrew";
@@ -155,6 +168,16 @@ sub run_test {
     is $run->('clean', ['0.1.1']), "v0.1.1 is already cleaned\n";
     is $run->('clean', ['foo']), "foo is already cleaned\n";
     is $run->('clean', []), "version is required\n";
+
+    # install binary
+    $run->('install-binary', ['v0.4.0']);
+    ok -e "$nodebrew->{node_dir}/v0.4.0";
+    ok -e "$nodebrew->{node_dir}/v0.4.0/binary";
+    ok -e "$nodebrew->{src_dir}/node-v0.4.0-linux-x86.tar.gz";
+    like $run->('list'), qr/v0.4.0/;
+
+    is $run->('install-binary', ['v0.4.0']), "v0.4.0 is already installed\n";
+    is $run->('install-binary', ['v0.4.1']), "v0.4.1 is not found\n";
 
     # use
     $run->('use', ['v0.1.1']);

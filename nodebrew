@@ -26,6 +26,7 @@ sub new {
         remote_list_url
         fetcher
         tarballs
+        tarballs_binary
     /;
 
     for (@props) {
@@ -86,82 +87,79 @@ sub _cmd_use {
 }
 
 sub _cmd_install {
-    my ($self, $args, $opts) = @_;
+    my ($self, $args) = @_;
 
-    my $version = _v($args->[0]) or error_and_exit('version is required');
-
-    if ($version !~ m/v\d+\.\d+\.\d+/) {
-        $version = Nodebrew::Utils::find_version(
-            $version, $self->get_remote_version()
-        );
-    }
-
-    error_and_exit('version not found') unless $version;
-    error_and_exit("$version is already installed")
-        if -e "$self->{node_dir}/$version";
-
-    if ($opts->{p}) {
-        my ($platform, $arch) = Nodebrew::Utils::system_info();
-        my $tarball = "http://nodejs.org/dist/$version/node-$version-$platform-$arch.tar.gz";
-        error_and_exit("$tarball is not found")
-            unless $self->{fetcher}->fetch_able($tarball);
-
-        # TODO: clean
-
-        print "fetch: $tarball\n";
-        $self->{fetcher}->download(
-            $tarball,
-            "$self->{src_dir}/node-$version-$platform-$arch.tar.gz"
-        ) or error_and_exit("download faild: $tarball");
-
-        system qq[
-            cd "$self->{src_dir}" &&
-            tar -xzf "node-$version-$platform-$arch.tar.gz" &&
-            mv "node-$version-$platform-$arch" "$self->{node_dir}/$version"
-        ];
-
-        print "install success\n";
-    }
-    else {
-        my $tarball;
-        my @tarballs = @{ $self->{tarballs} };
-        for (@tarballs) {
-            $_ =~ s/{version}/$version/g;
-            if ($self->{fetcher}->fetch_able($_)) {
-                $tarball = $_;
-                last;
-            }
+    my $version = $self->get_install_version($args->[0]);
+    my $tarball;
+    my @tarballs = @{ $self->{tarballs} };
+    for (@tarballs) {
+        my $url = Nodebrew::Utils::apply_vars($_, { version  => $version });
+        if ($self->{fetcher}->fetch_able($url)) {
+            $tarball = $url;
+            last;
         }
-        error_and_exit("$version is not found") unless $tarball;
-
-        my $src_path = "$self->{src_dir}/node-$version";
-        if (!-d $src_path) {
-            $self->_cmd_clean([$version]);
-            print "fetch: $tarball\n";
-            $self->{fetcher}->download(
-                $tarball,
-                "$self->{src_dir}/node-$version.tar.gz"
-            ) or error_and_exit("download faild: $tarball");
-
-            system qq[
-                cd "$self->{src_dir}" &&
-                tar -xzf "node-$version.tar.gz"
-            ];
-        }
-        else {
-            print "Install using cache.\n\n";
-        }
-
-        system qq[
-            cd "$src_path" &&
-            ./configure --prefix="$self->{node_dir}/$version" &&
-            make &&
-            make install
-        ];
     }
+    error_and_exit("$version is not found") unless $tarball;
+
+    my $src_path = "$self->{src_dir}/node-$version";
+
+    $self->clean();
+
+    print "fetch: $tarball\n";
+    $self->{fetcher}->download(
+        $tarball,
+        "$self->{src_dir}/node-$version.tar.gz"
+    ) or error_and_exit("download faild: $tarball");
+
+    system qq[
+        cd "$self->{src_dir}" &&
+        tar -xzf "node-$version.tar.gz"
+    ];
+
+    system qq[
+        cd "$src_path" &&
+        ./configure --prefix="$self->{node_dir}/$version" &&
+        make &&
+        make install
+    ];
 }
 
 sub _cmd_install_binary {
+    my ($self, $args) = @_;
+
+    my $version = $self->get_install_version($args->[0]);
+    my ($platform, $arch) = Nodebrew::Utils::system_info();
+    my $tarball;
+    my @tarballs = @{ $self->{tarballs_binary} };
+    for (@tarballs) {
+        my $url = Nodebrew::Utils::apply_vars($_, {
+            version  => $version,
+            platform => $platform,
+            arch     => $arch,
+        });
+        if ($self->{fetcher}->fetch_able($url)) {
+            $tarball = $url;
+            last;
+        }
+    }
+
+    error_and_exit("$version is not found") unless $tarball;
+
+    $self->clean();
+
+    print "fetch: $tarball\n";
+    $self->{fetcher}->download(
+        $tarball,
+        "$self->{src_dir}/node-$version-$platform-$arch.tar.gz"
+    ) or error_and_exit("download faild: $tarball");
+
+    system qq[
+        cd "$self->{src_dir}" &&
+        tar -xzf "node-$version-$platform-$arch.tar.gz" &&
+        mv "node-$version-$platform-$arch" "$self->{node_dir}/$version"
+    ];
+
+    print "install success\n";
 }
 
 sub _cmd_uninstall {
@@ -370,7 +368,8 @@ nodebrew $VERSION
 
 Usage:
     nodebrew help                       Show this message
-    nodebrew install <version>          Download and install a <version>
+    nodebrew install <version>          Download and install a <version> (compile from source)
+    nodebrew install-binary <version>   Download and install a <version> (binary file)
     nodebrew uninstall <version>        Uninstall a version
     nodebrew use <version>              Use <version>
     nodebrew list                       List installed versions
@@ -387,6 +386,36 @@ Example:
     nodebrew install v0.6.0     Install a specific version number
     nodebrew use v0.6.0         Use a specific version number
 ...
+}
+
+sub get_install_version {
+    my ($self, $arg) = @_;
+
+    my $version = _v($arg) or error_and_exit('version is required');
+
+    if ($version !~ m/v\d+\.\d+\.\d+/) {
+        $version = Nodebrew::Utils::find_version(
+            $version, $self->get_remote_version()
+        );
+    }
+
+    error_and_exit('version not found') unless $version;
+    error_and_exit("$version is already installed")
+        if -e "$self->{node_dir}/$version";
+
+    return $version;
+}
+
+sub clean {
+    my $self = shift;
+
+    opendir my $dh, $self->{src_dir} or die $!;
+    while (my $file = readdir $dh) {
+        next if $file =~ m/^\./;
+        my $path = "$self->{src_dir}/$file";
+        unlink $path if -f $path;
+        rmtree $path if -d $path;
+    }
 }
 
 sub use_default {
@@ -528,6 +557,18 @@ sub system_info {
     my $arch = ($machine =~ m/x86_64/) ? 'x64' : 'x86';
 
     return (lc $sysname, $arch);
+}
+
+sub apply_vars {
+    my ($str, $hash) = @_;
+
+    for my $key (keys $hash) {
+        my $val = $hash->{$key};
+
+        $str =~ s/#{$key}/$val/g;
+    }
+
+    return $str;
 }
 
 package Nodebrew::Config;
@@ -683,8 +724,11 @@ sub main {
         remote_list_url => 'http://nodejs.org/dist/',
         fetcher         => Nodebrew::Fetcher::get($fetcher_type),
         tarballs        => [
-            "http://nodejs.org/dist/{version}/node-{version}.tar.gz",
+            "http://nodejs.org/dist/#{version}/node-#{version}.tar.gz",
             "http://nodejs.org/dist/node-{version}.tar.gz",
+        ],
+        tarballs_binary => [
+            "http://nodejs.org/dist/#{version}/node-#{version}-#{platform}-#{arch}.tar.gz",
         ],
     )->run($command, $args, $opts);
 }
