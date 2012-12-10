@@ -106,7 +106,8 @@ Update nodebrew.
 ## Commands
 
     $ nodebrew help                       Show this message
-    $ nodebrew install <version>          Download and install a <version>
+    $ nodebrew install <version>          Download and install a <version> (compile from source)
+    $ nodebrew install-binary <version>   Download and install a <version> (binary file)
     $ nodebrew uninstall <version>        Uninstall a version
     $ nodebrew use <version>              Use <version>
     $ nodebrew list                       List installed versions
