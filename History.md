@@ -1,3 +1,12 @@
+0.6.0  / 2012-12-10
+====================
+
+* Add subcommand `install-package`.
+* Update src directory structure.
+* Update tar extract using perl module `Archive::Tar`
+* Update error handling
+* Update `migrate-package`, not install already installed package.
+
 0.5.2  / 2012-11-04
 ====================
 
