@@ -285,6 +285,11 @@ sub _cmd_selfupdate {
 sub _cmd_migrate_package {
     my ($self, $args) = @_;
 
+    my $current_version = $self->get_current_version();
+    error_and_exit("version not selected") if $current_version eq 'none';
+
+    my @current_packages = $self->get_packages($current_version);
+
     my $alias = Nodebrew::Config->new($self->{alias_file});
     my $orig_version = _v($alias->get($args->[0])) || _v($args->[0])
         or error_and_exit('version is required');
@@ -292,31 +297,31 @@ sub _cmd_migrate_package {
         $orig_version, $self->get_local_version()
     ) or error_and_exit("$orig_version is not installed");
 
-    my $target = "$self->{node_dir}/$version";
-    my $module_dir = "$target/lib/node_modules";
-    my @installed;
-
-    opendir my $dh, $module_dir or die $!;
-    while (my $dir = readdir $dh) {
-        push @installed, "$module_dir/$dir" unless $dir =~ /^(\.\.?|npm)$/;
-    }
+    my @target_packages = $self->get_packages($version);
+    my $package_dir = "$self->{node_dir}/$version/lib/node_modules";
 
     my (@success, @fail);
-    foreach my $package (@installed){
-        print "Try to install $package ...\n";
-        my $result = system qq[npm install -g $package];
-        if( $result ){
-            push @fail, $package;
+    foreach my $package_name (@target_packages) {
+        if (grep { $_ eq $package_name } @current_packages) {
+            print "$package_name is already installed\n";
+            next;
         }
-        else{
-            push @success, $package;
+
+        print "Try to install $package_name ...\n";
+        my $result = system qq[npm install -g $package_dir/$package_name];
+        if ($result) {
+            push @fail, $package_name;
+        }
+        else {
+            push @success, $package_name;
         }
     }
-    if( @success ){
-        print "Install succeeded:\n", join( "\n", @success ), "\n\n";
+
+    if (@success) {
+        print "\nInstall succeeded:\n", join( "\n", @success ), "\n\n";
     }
-    if( @fail ){
-        print "Install failed:\n", join( "\n", @fail ), "\n\n";
+    if (@fail) {
+        print "\nInstall failed:\n", join( "\n", @fail ), "\n\n";
     }
 }
 
@@ -459,6 +464,20 @@ sub get_remote_version {
     }
 
     return \@versions;
+}
+
+sub get_packages {
+    my ($self, $version) = @_;
+
+    my $module_dir = "$self->{node_dir}/$version/lib/node_modules";
+    my @packages;
+
+    opendir my $dh, $module_dir or die $!;
+    while (my $dir = readdir $dh) {
+        push @packages, $dir unless $dir =~ /^\./;
+    }
+
+    return @packages;
 }
 
 sub error_and_exit {
