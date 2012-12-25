@@ -96,7 +96,7 @@ Set alias.
 
 Uninstall.
 
-    $ nodebrew v0.6.0
+    $ nodebrew uninstall v0.6.0
     v0.6.0 uninstalled
 
 Update nodebrew.
