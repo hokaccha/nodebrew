@@ -498,7 +498,6 @@ package Nodebrew::Utils;
 
 use POSIX qw/uname/;
 use Cwd 'getcwd';
-use Archive::Tar;
 
 sub sort_version {
     my $version = shift;
@@ -586,11 +585,19 @@ sub extract_tar {
     my ($filepath, $outdir) = @_;
 
     my $cwd = getcwd;
-    my $tar = Archive::Tar->new;
 
     chdir($outdir);
-    $tar->read($filepath);
-    $tar->extract;
+
+    eval {
+        require Archive::Tar;
+        my $tar = Archive::Tar->new;
+        $tar->read($filepath);
+        $tar->extract;
+    };
+    if ($@) {
+        `tar zfx $filepath`;
+    }
+
     chdir($cwd);
 }
 
