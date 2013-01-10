@@ -119,3 +119,13 @@ Update nodebrew.
     $ nodebrew clean <version> | all      Remove source file
     $ nodebrew selfupdate                 Update nodebrew
     $ nodebrew migrate-package <version>  Install global NPM packages contained in <version> to current version
+
+## Development
+
+Install module for testing.
+
+    $ cpanm --installdeps .
+
+Run test.
+
+    $ prove -lvr
