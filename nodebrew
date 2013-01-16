@@ -563,8 +563,16 @@ sub parse_args {
 }
 
 sub system_info {
+    my $arch;
     my ($sysname, $machine) = (uname)[0, 4];
-    my $arch = ($machine =~ m/x86_64/) ? 'x64' : 'x86';
+
+    if  ($machine =~ m/x86_64/) {
+        $arch = 'x64';
+    } elsif ($machine =~ m/i686/) {
+        $arch = 'x86';
+    } elsif ($machine =~ m/armv6l/) {
+        $arch = 'arm-pi';
+    }
 
     return (lc $sysname, $arch);
 }
