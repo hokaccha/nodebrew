@@ -1,3 +1,8 @@
+0.6.2  / 2013-01-17
+====================
+
+* Add raspberry pi support with `install-binary` (@nulltask)
+
 0.6.1  / 2012-12-29
 ====================
 
