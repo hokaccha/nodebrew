@@ -5,7 +5,7 @@
 #
 # @author  Kazuhito Hokamura <k.hokamura@gmail.com>
 # @url     https://github.com/hokaccha/nodebrew
-# @version 0.6.1
+# @version 0.6.2
 
 use strict;
 use warnings;
@@ -14,7 +14,7 @@ package Nodebrew;
 
 use File::Path qw/rmtree/;
 
-our $VERSION = '0.6.1';
+our $VERSION = '0.6.2';
 
 sub new {
     my $class = shift;
