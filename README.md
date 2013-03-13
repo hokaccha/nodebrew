@@ -6,11 +6,11 @@ Node.js version manager.
 
 Using curl one liner.
 
-    $ curl https://raw.github.com/hokaccha/nodebrew/master/nodebrew | perl - setup
+    $ curl -L git.io/nodebrew | perl - setup
 
 Or download and setup.
 
-    $ wget https://raw.github.com/hokaccha/nodebrew/master/nodebrew
+    $ wget git.io/nodebrew
     $ perl nodebrew setup
 
 Add PATH setting your shell config file, .bashrc or .zshrc.
