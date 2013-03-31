@@ -1,5 +1,7 @@
 # nodebrew
 
+[![Build Status](https://travis-ci.org/hokaccha/nodebrew.png?branch=master)](https://travis-ci.org/hokaccha/nodebrew)
+
 Node.js version manager.
 
 ## Install
