@@ -124,8 +124,8 @@ Update nodebrew.
 
 Install module for testing.
 
-    $ cpanm --installdeps .
+    $ carton install
 
 Run test.
 
-    $ prove -lvr
+    $ carton exec -- prove -lvr
