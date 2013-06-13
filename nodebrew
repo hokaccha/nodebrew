@@ -572,6 +572,11 @@ sub system_info {
         $arch = 'x86';
     } elsif ($machine =~ m/armv6l/) {
         $arch = 'arm-pi';
+    } elsif ($sysname =~ m/sunos/i) {
+        # SunOS $machine => 'i86pc'. but use 64bit kernel.
+        # Solaris 11 not support 32bit kernel.
+        # both 32bit and 64bit node-binary even work on 64bit kernel
+        $arch = 'x64';
     }
 
     return (lc $sysname, $arch);
