@@ -156,4 +156,17 @@ is Nodebrew::Utils::apply_vars('key-#{key1}-#{key2}-#{key1}', {
     is $arch, 'x64';
 }
 
+{
+    no warnings;
+    *POSIX::uname = sub {
+        return ('sysname', undef, undef, undef, 'machine');
+    };
+    eval {
+        Nodebrew::Utils::system_info();
+    };
+
+    like $@, qr/^Error: sysname machine is not supported./;
+}
+
+
 done_testing;

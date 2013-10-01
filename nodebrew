@@ -577,6 +577,8 @@ sub system_info {
         # Solaris 11 not support 32bit kernel.
         # both 32bit and 64bit node-binary even work on 64bit kernel
         $arch = 'x64';
+    } else {
+        die "Error: $sysname $machine is not supported."
     }
 
     return (lc $sysname, $arch);
