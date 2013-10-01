@@ -496,7 +496,7 @@ sub _v {
 
 package Nodebrew::Utils;
 
-use POSIX qw/uname/;
+use POSIX;
 use Cwd 'getcwd';
 
 sub sort_version {
@@ -564,11 +564,11 @@ sub parse_args {
 
 sub system_info {
     my $arch;
-    my ($sysname, $machine) = (uname)[0, 4];
+    my ($sysname, $machine) = (POSIX::uname)[0, 4];
 
     if  ($machine =~ m/x86_64/) {
         $arch = 'x64';
-    } elsif ($machine =~ m/i686/) {
+    } elsif ($machine =~ m/i\d86/) {
         $arch = 'x86';
     } elsif ($machine =~ m/armv6l/) {
         $arch = 'arm-pi';

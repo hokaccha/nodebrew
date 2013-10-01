@@ -1,6 +1,7 @@
 use strict;
 use warnings;
 use Test::More;
+use POSIX;
 
 require 'nodebrew';
 
@@ -108,5 +109,51 @@ is Nodebrew::Utils::apply_vars('key-#{key1}-#{key2}-#{key1}', {
     key1 => 'val1',
     key2 => 'val2',
 }), 'key-val1-val2-val1';
+
+{
+    no warnings;
+    *POSIX::uname = sub {
+        return ('FOO', undef, undef, undef, 'i686');
+    };
+    my ($sysname, $arch) = Nodebrew::Utils::system_info();
+    is $sysname, 'foo';
+    is $arch, 'x86';
+}
+
+{
+    no warnings;
+    *POSIX::uname = sub {
+        return ('FOO', undef, undef, undef, 'i386');
+    };
+    my ($sysname, $arch) = Nodebrew::Utils::system_info();
+    is $arch, 'x86';
+}
+
+{
+    no warnings;
+    *POSIX::uname = sub {
+        return ('FOO', undef, undef, undef, 'x86_64');
+    };
+    my ($sysname, $arch) = Nodebrew::Utils::system_info();
+    is $arch, 'x64';
+}
+
+{
+    no warnings;
+    *POSIX::uname = sub {
+        return ('FOO', undef, undef, undef, 'armv6l');
+    };
+    my ($sysname, $arch) = Nodebrew::Utils::system_info();
+    is $arch, 'arm-pi';
+}
+
+{
+    no warnings;
+    *POSIX::uname = sub {
+        return ('sunos', undef, undef, undef, 'foo');
+    };
+    my ($sysname, $arch) = Nodebrew::Utils::system_info();
+    is $arch, 'x64';
+}
 
 done_testing;
