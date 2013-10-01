@@ -325,6 +325,21 @@ sub _cmd_migrate_package {
     }
 }
 
+sub _cmd_exec {
+    my ($self, $args) = @_;
+
+    my $alias = Nodebrew::Config->new($self->{alias_file});
+    my $orig_version = _v($alias->get($args->[0])) || _v($args->[0])
+        or error_and_exit('version is required');
+    my $version = Nodebrew::Utils::find_version(
+        $orig_version, $self->get_local_version()
+    ) or error_and_exit("$orig_version is not installed");
+
+    $ENV{PATH} = "$self->{node_dir}/$version/bin:$ENV{PATH}";
+
+    system((split(' -- ', join(' ', @ARGV), 2))[1]);
+}
+
 sub _cmd_help {
     my ($self, $args) = @_;
 
