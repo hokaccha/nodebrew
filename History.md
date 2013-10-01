@@ -1,4 +1,10 @@
-0.6.2  / 2013-01-17
+0.6.4  / 2013-10-01
+====================
+
+* Add showing error message when not supported machine.
+* Fix select $arch when i386.
+
+0.6.3  / 2013-06-13
 ====================
 
 * Add Solaris support with `install-binary` (@onopm)
