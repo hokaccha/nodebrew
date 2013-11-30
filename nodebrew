@@ -136,7 +136,7 @@ sub _cmd_install_binary {
 
     rename "$src_dir/$target_name", "$self->{node_dir}/$version";
 
-    print "install success\n";
+    print "Install successful\n";
 }
 
 sub _cmd_uninstall {
@@ -279,7 +279,7 @@ sub _cmd_selfupdate {
     my ($self, $args) = @_;
 
     $self->fetch_nodebrew();
-    print "update successfull\n";
+    print "Update successful\n";
 }
 
 sub _cmd_migrate_package {
@@ -318,7 +318,7 @@ sub _cmd_migrate_package {
     }
 
     if (@success) {
-        print "\nInstall succeeded:\n", join( "\n", @success ), "\n\n";
+        print "\nInstall successful:\n", join( "\n", @success ), "\n\n";
     }
     if (@fail) {
         print "\nInstall failed:\n", join( "\n", @fail ), "\n\n";
