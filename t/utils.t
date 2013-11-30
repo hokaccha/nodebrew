@@ -89,22 +89,6 @@ is Nodebrew::Utils::find_version('stable', [
     is $args->[0], '0.1';
 }
 
-{
-    my ($command, $args, $opt) 
-      = Nodebrew::Utils::parse_args('install', '-p', 'v0.8.0');
-    is $command, 'install';
-    is_deeply $args, ['v0.8.0'];
-    is_deeply $opt, { p => 1 };
-}
-
-{
-    my ($command, $args, $opt) 
-      = Nodebrew::Utils::parse_args('install', 'v0.8.0', '-p');
-    is $command, 'install';
-    is_deeply $args, ['v0.8.0'];
-    is_deeply $opt, { p => 1 };
-}
-
 is Nodebrew::Utils::apply_vars('key-#{key1}-#{key2}-#{key1}', {
     key1 => 'val1',
     key2 => 'val2',

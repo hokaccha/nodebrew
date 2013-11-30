@@ -3,7 +3,7 @@
 _nodebrew()
 {
     local opts cur prev
-    opts="alias unalias ls ls-all ls-remote list install install-binary uninstall use clean selfupdate migrate-package help"
+    opts="alias unalias ls ls-all ls-remote list install install-binary uninstall use clean selfupdate migrate-package exec help"
     cur="${COMP_WORDS[COMP_CWORD]}"
     prev="${COMP_WORDS[COMP_CWORD-1]}"
 
@@ -16,7 +16,7 @@ _nodebrew()
         _alias=$(nodebrew alias 2> /dev/null | sed 's/->.*//')
 
         case "${prev}" in
-            use|migrate-package)
+            use|migrate-package|exec)
                 local target
                 target="${_versions} ${_alias}"
                 COMPREPLY=( $(compgen -W "${target}" ${cur} ) )
