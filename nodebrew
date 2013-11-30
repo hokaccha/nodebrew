@@ -347,24 +347,25 @@ sub _cmd_help {
 nodebrew $VERSION
 
 Usage:
-    nodebrew help                       Show this message
-    nodebrew install <version>          Download and install a <version> (compile from source)
-    nodebrew install-binary <version>   Download and install a <version> (binary file)
-    nodebrew uninstall <version>        Uninstall a version
-    nodebrew use <version>              Use <version>
-    nodebrew list                       List installed versions
-    nodebrew ls                         Alias for `list`
-    nodebrew ls-remote                  List remote versions
-    nodebrew ls-all                     List remote and installed versions
-    nodebrew alias <key> <version>      Set alias to version
-    nodebrew unalias <key>              Remove alias
-    nodebrew clean <version> | all      Remove source file
-    nodebrew selfupdate                 Update nodebrew
-    nodebrew migrate-package <version>  Install global NPM packages contained in <version> to current version
+    nodebrew help                         Show this message
+    nodebrew install <version>            Download and install a <version> (compile from source)
+    nodebrew install-binary <version>     Download and install a <version> (binary file)
+    nodebrew uninstall <version>          Uninstall a version
+    nodebrew use <version>                Use <version>
+    nodebrew list                         List installed versions
+    nodebrew ls                           Alias for `list`
+    nodebrew ls-remote                    List remote versions
+    nodebrew ls-all                       List remote and installed versions
+    nodebrew alias <key> <version>        Set alias to version
+    nodebrew unalias <key>                Remove alias
+    nodebrew clean <version> | all        Remove source file
+    nodebrew selfupdate                   Update nodebrew
+    nodebrew migrate-package <version>    Install global NPM packages contained in <version> to current version
+    nodebrew exec <version> -- <command>  Execute <command> specified <version>
 
 Example:
-    nodebrew install v0.6.0     Install a specific version number
-    nodebrew use v0.6.0         Use a specific version number
+    nodebrew install v0.10.22     Install a specific version number
+    nodebrew use v0.10.22         Use a specific version number
 ...
 }
 
