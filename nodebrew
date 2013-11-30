@@ -70,13 +70,7 @@ sub run {
 sub _cmd_use {
     my ($self, $args) = @_;
 
-    my $alias = Nodebrew::Config->new($self->{alias_file});
-    my $orig_version = _v($alias->get($args->[0])) || _v($args->[0])
-        or error_and_exit('version is required');
-    my $version = Nodebrew::Utils::find_version(
-        $orig_version, $self->get_local_version()
-    ) or error_and_exit("$orig_version is not installed");
-
+    my $version = $self->find_available_version($args->[0]);
     my $target = "$self->{node_dir}/$version";
     my $nodebrew_path = "$target/bin/nodebrew";
 
@@ -89,7 +83,7 @@ sub _cmd_use {
 sub _cmd_install {
     my ($self, $args) = @_;
 
-    my $version = $self->get_install_version($args->[0]);
+    my $version = $self->find_install_version($args->[0]);
     my $tarball_url = $self->get_tarball($self->{tarballs}, $version);
     my $src_dir = "$self->{src_dir}/$version";
     my $target_name = "node-$version";
@@ -115,7 +109,7 @@ sub _cmd_install {
 sub _cmd_install_binary {
     my ($self, $args) = @_;
 
-    my $version = $self->get_install_version($args->[0]);
+    my $version = $self->find_install_version($args->[0]);
     my ($platform, $arch) = Nodebrew::Utils::system_info();
     my $tarball_url = $self->get_tarball($self->{tarballs_binary}, $version, {
         platform => $platform,
@@ -290,13 +284,7 @@ sub _cmd_migrate_package {
 
     my @current_packages = $self->get_packages($current_version);
 
-    my $alias = Nodebrew::Config->new($self->{alias_file});
-    my $orig_version = _v($alias->get($args->[0])) || _v($args->[0])
-        or error_and_exit('version is required');
-    my $version = Nodebrew::Utils::find_version(
-        $orig_version, $self->get_local_version()
-    ) or error_and_exit("$orig_version is not installed");
-
+    my $version = $self->find_available_version($args->[0]);
     my @target_packages = $self->get_packages($version);
     my $package_dir = "$self->{node_dir}/$version/lib/node_modules";
 
@@ -328,16 +316,14 @@ sub _cmd_migrate_package {
 sub _cmd_exec {
     my ($self, $args) = @_;
 
-    my $alias = Nodebrew::Config->new($self->{alias_file});
-    my $orig_version = _v($alias->get($args->[0])) || _v($args->[0])
-        or error_and_exit('version is required');
-    my $version = Nodebrew::Utils::find_version(
-        $orig_version, $self->get_local_version()
-    ) or error_and_exit("$orig_version is not installed");
+    my $version = $self->find_available_version(shift $args);
 
     $ENV{PATH} = "$self->{node_dir}/$version/bin:$ENV{PATH}";
 
-    system((split(' -- ', join(' ', @ARGV), 2))[1]);
+    shift $args if $args->[0] eq '--';
+    my $command = join ' ', @$args;
+
+    system $command;
 }
 
 sub _cmd_help {
@@ -369,7 +355,7 @@ Example:
 ...
 }
 
-sub get_install_version {
+sub find_install_version {
     my ($self, $arg) = @_;
 
     my $version = _v($arg) or error_and_exit('version is required');
@@ -383,6 +369,20 @@ sub get_install_version {
     error_and_exit('version not found') unless $version;
     error_and_exit("$version is already installed")
         if -e "$self->{node_dir}/$version";
+
+    return $version;
+}
+
+sub find_available_version {
+    my ($self, $arg) = @_;
+
+    my $alias = Nodebrew::Config->new($self->{alias_file});
+    my $target_version = _v($alias->get($arg) || $arg)
+        or error_and_exit('version is required');
+
+    my $local_version = $self->get_local_version();
+    my $version = Nodebrew::Utils::find_version($target_version, $local_version)
+        or error_and_exit("$target_version is not installed");
 
     return $version;
 }
