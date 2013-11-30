@@ -55,12 +55,12 @@ sub init {
 }
 
 sub run {
-    my ($self, $command, $args, $opts) = @_;
+    my ($self, $command, $args) = @_;
 
     $command ||= '';
     $command =~ s/-/_/g;
     if (my $cmd = $self->can("_cmd_$command")) {
-        $cmd->($self, $args, $opts);
+        $cmd->($self, $args);
     }
     else {
         $self->_cmd_help($args);
@@ -561,21 +561,9 @@ sub find_version {
 }
 
 sub parse_args {
-    my $opts = {};
-    my @args;
+    my $command = shift;
 
-    for (@_) {
-        if ($_ =~ m/^-(\w)/) {
-            $opts->{$1} = 1;
-        }
-        else {
-            push @args, $_;
-        }
-    }
-
-    my $command = shift @args;
-
-    return ($command, \@args, $opts);
+    return ($command, \@_);
 }
 
 sub system_info {
@@ -777,7 +765,7 @@ sub main {
     my $fetcher_type = `which curl` ? 'curl' :
                        `which wget` ? 'wget' :
                         die 'Need curl or wget';
-    my ($command, $args, $opts) = Nodebrew::Utils::parse_args(@ARGV);
+    my ($command, $args) = Nodebrew::Utils::parse_args(@ARGV);
 
     Nodebrew->new(
         brew_dir        => $brew_dir,
@@ -791,7 +779,7 @@ sub main {
         tarballs_binary => [
             "http://nodejs.org/dist/#{version}/node-#{version}-#{platform}-#{arch}.tar.gz",
         ],
-    )->run($command, $args, $opts);
+    )->run($command, $args);
 }
 
 main() unless caller;
