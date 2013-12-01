@@ -316,11 +316,11 @@ sub _cmd_migrate_package {
 sub _cmd_exec {
     my ($self, $args) = @_;
 
-    my $version = $self->find_available_version(shift $args);
+    my $version = $self->find_available_version(shift @$args);
 
     $ENV{PATH} = "$self->{node_dir}/$version/bin:$ENV{PATH}";
 
-    shift $args if $args->[0] eq '--';
+    shift @$args if $args->[0] eq '--';
     my $command = join ' ', @$args;
 
     system $command;
