@@ -71,6 +71,8 @@ sub run_test {
     my $nodebrew = Nodebrew->new(
         brew_dir => "$FindBin::Bin/.nodebrew",
         nodebrew_url => "$url/nodebrew",
+        bash_completion_url => "$url/completions/bash/nodebrew-completion",
+        zsh_completion_url => "$url/completions/zsh/_nodebrew",
         remote_list_url => "$url/list.html",
         fetcher => Nodebrew::Fetcher::get('curl'),
         tarballs => [
