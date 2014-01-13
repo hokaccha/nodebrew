@@ -249,8 +249,6 @@ sub _cmd_setup {
     mkdir $self->{node_dir} unless -e $self->{node_dir};
     mkdir $self->{default_dir} unless -e $self->{default_dir};
     mkdir "$self->{default_dir}/bin" unless -e "$self->{default_dir}/bin";
-    mkpath $self->{bash_completion_dir} unless -e $self->{bash_completion_dir};
-    mkpath $self->{zsh_completion_dir} unless -e $self->{zsh_completion_dir};
 
     my $nodebrew_path = "$self->{brew_dir}/nodebrew";
     $self->fetch_nodebrew();
@@ -462,6 +460,9 @@ sub fetch_nodebrew {
     my $nodebrew_path = "$self->{brew_dir}/nodebrew";
     my $bash_completion_path = $self->{bash_completion_dir} . '/' . basename($self->{bash_completion_url});
     my $zsh_completion_path = $self->{zsh_completion_dir} . '/' . basename($self->{zsh_completion_url});
+
+    mkpath $self->{bash_completion_dir} unless -e $self->{bash_completion_dir};
+    mkpath $self->{zsh_completion_dir} unless -e $self->{zsh_completion_dir};
 
     $self->make_file($nodebrew_source, $nodebrew_path);
     $self->make_file($bash_completion, $bash_completion_path);
