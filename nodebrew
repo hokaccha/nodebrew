@@ -12,7 +12,8 @@ use warnings;
 
 package Nodebrew;
 
-use File::Path qw/rmtree/;
+use File::Path qw/rmtree mkpath/;
+use File::Basename qw/basename/;
 
 our $VERSION = '0.7.1';
 
@@ -23,6 +24,8 @@ sub new {
     my @props = qw/
         brew_dir
         nodebrew_url
+        bash_completion_url
+        zsh_completion_url
         remote_list_url
         fetcher
         tarballs
@@ -52,6 +55,8 @@ sub init {
     $self->{current} = $self->{brew_dir} . '/current';
     $self->{default_dir} = $self->{brew_dir} . '/default';
     $self->{alias_file} = $self->{brew_dir} . '/alias';
+    $self->{bash_completion_dir} = $self->{brew_dir} . '/completions/bash';
+    $self->{zsh_completion_dir} = $self->{brew_dir} . '/completions/zsh';
 }
 
 sub run {
@@ -244,6 +249,8 @@ sub _cmd_setup {
     mkdir $self->{node_dir} unless -e $self->{node_dir};
     mkdir $self->{default_dir} unless -e $self->{default_dir};
     mkdir "$self->{default_dir}/bin" unless -e "$self->{default_dir}/bin";
+    mkpath $self->{bash_completion_dir} unless -e $self->{bash_completion_dir};
+    mkpath $self->{zsh_completion_dir} unless -e $self->{zsh_completion_dir};
 
     my $nodebrew_path = "$self->{brew_dir}/nodebrew";
     $self->fetch_nodebrew();
@@ -450,10 +457,21 @@ sub fetch_nodebrew {
 
     print "fetching nodebrew...\n";
     my $nodebrew_source = $self->{fetcher}->fetch($self->{nodebrew_url});
+    my $bash_completion = $self->{fetcher}->fetch($self->{bash_completion_url});
+    my $zsh_completion = $self->{fetcher}->fetch($self->{zsh_completion_url});
     my $nodebrew_path = "$self->{brew_dir}/nodebrew";
+    my $bash_completion_path = $self->{bash_completion_dir} . '/' . basename($self->{bash_completion_url});
+    my $zsh_completion_path = $self->{zsh_completion_dir} . '/' . basename($self->{zsh_completion_url});
 
-    open my $fh, '>', $nodebrew_path or die "Error: $!";
-    print $fh $nodebrew_source;
+    $self->make_file($nodebrew_source, $nodebrew_path);
+    $self->make_file($bash_completion, $bash_completion_path);
+    $self->make_file($zsh_completion, $zsh_completion_path);
+}
+
+sub make_file {
+    my ($self, $content, $dest) = @_;
+    open my $fh, '>', $dest or die "Error: $!";
+    print $fh $content;
 }
 
 sub get_local_version {
@@ -761,7 +779,10 @@ use Cwd 'abs_path';
 
 sub main {
     my $brew_dir = abs_path($ENV{'NODEBREW_ROOT'} || $ENV{'HOME'} . '/.nodebrew');
-    my $nodebrew_url = 'https://raw.github.com/hokaccha/nodebrew/master/nodebrew';
+    my $base_url = 'https://raw.github.com/hokaccha/nodebrew/master/';
+    my $nodebrew_url = "${base_url}nodebrew";
+    my $bash_completion_url = "${base_url}completions/bash/nodebrew-completion";
+    my $zsh_completion_url = "${base_url}completions/zsh/_nodebrew";
     my $fetcher_type = `which curl` ? 'curl' :
                        `which wget` ? 'wget' :
                         die 'Need curl or wget';
@@ -770,6 +791,8 @@ sub main {
     Nodebrew->new(
         brew_dir        => $brew_dir,
         nodebrew_url    => $nodebrew_url,
+        bash_completion_url => $bash_completion_url,
+        zsh_completion_url => $zsh_completion_url,
         remote_list_url => 'http://nodejs.org/dist/',
         fetcher         => Nodebrew::Fetcher::get($fetcher_type),
         tarballs        => [
