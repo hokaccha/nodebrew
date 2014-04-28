@@ -737,13 +737,13 @@ sub new { bless {}; }
 sub fetch_able {
     my ($self, $url) = @_;
 
-    `curl -Is "$url"` =~ m/200 OK/;
+    `curl -LIs "$url"` =~ m/200 OK/;
 }
 
 sub fetch {
     my ($self, $url) = @_;
 
-    `curl -s $url`;
+    `curl -Ls $url`;
 }
 
 sub download {
