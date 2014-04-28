@@ -780,7 +780,7 @@ use Cwd 'abs_path';
 
 sub main {
     my $brew_dir = abs_path($ENV{'NODEBREW_ROOT'} || $ENV{'HOME'} . '/.nodebrew');
-    my $base_url = 'https://raw.github.com/hokaccha/nodebrew/master/';
+    my $base_url = 'https://raw.githubusercontent.com/hokaccha/nodebrew/master/';
     my $nodebrew_url = "${base_url}nodebrew";
     my $bash_completion_url = "${base_url}completions/bash/nodebrew-completion";
     my $zsh_completion_url = "${base_url}completions/zsh/_nodebrew";
