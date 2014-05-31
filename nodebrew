@@ -244,11 +244,7 @@ sub _cmd_unalias {
 sub _cmd_setup {
     my ($self, $args) = @_;
 
-    mkdir $self->{brew_dir} unless -e $self->{brew_dir};
-    mkdir $self->{src_dir} unless -e $self->{src_dir};
-    mkdir $self->{node_dir} unless -e $self->{node_dir};
-    mkdir $self->{default_dir} unless -e $self->{default_dir};
-    mkdir "$self->{default_dir}/bin" unless -e "$self->{default_dir}/bin";
+    $self->_cmd_setup_dirs();
 
     my $nodebrew_path = "$self->{brew_dir}/nodebrew";
     $self->fetch_nodebrew();
@@ -263,6 +259,16 @@ sub _cmd_setup {
     print "Add path:\n\n";
     print "export PATH=$brew_dir/current/bin:\$PATH\n";
     print "========================================\n";
+}
+
+sub _cmd_setup_dirs {
+    my $self = shift;
+
+    mkdir $self->{brew_dir} unless -e $self->{brew_dir};
+    mkdir $self->{src_dir} unless -e $self->{src_dir};
+    mkdir $self->{node_dir} unless -e $self->{node_dir};
+    mkdir $self->{default_dir} unless -e $self->{default_dir};
+    mkdir "$self->{default_dir}/bin" unless -e "$self->{default_dir}/bin";
 }
 
 sub _cmd_clean {
