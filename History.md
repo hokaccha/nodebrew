@@ -1,3 +1,8 @@
+0.7.4  / 2014-06-02
+====================
+
+* Add _cmd_setup_dirs function for homebrew installation (@oinume)
+
 0.7.3  / 2014-04-28
 ====================
 
