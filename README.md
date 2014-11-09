@@ -115,7 +115,7 @@ We recommend to use the `install-binary` command to install. If you want to comp
 
     $ nodebrew install v0.10.29
 
-The `install` command can pass configure options of Node.js.
+You can pass configure options of Node.js.
 
     $ nodebrew install v0.11.14 --v8-options=--harmony
 
