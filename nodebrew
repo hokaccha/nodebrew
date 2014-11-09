@@ -88,7 +88,9 @@ sub _cmd_use {
 sub _cmd_install {
     my ($self, $args) = @_;
 
-    my $version = $self->find_install_version($args->[0]);
+    my $v = shift @$args;
+    my $configure_opts = join ' ', @$args;
+    my $version = $self->find_install_version($v);
     my $tarball_url = $self->get_tarball($self->{tarballs}, $version);
     my $src_dir = "$self->{src_dir}/$version";
     my $target_name = "node-$version";
@@ -105,7 +107,7 @@ sub _cmd_install {
 
     system qq[
         cd "$src_dir/$target_name" &&
-        ./configure --prefix="$self->{node_dir}/$version" &&
+        ./configure --prefix="$self->{node_dir}/$version" $configure_opts &&
         make &&
         make install
     ];
