@@ -37,34 +37,34 @@ Confirm.
 
 Install.
 
-    $ nodebrew install v0.6.0
+    $ nodebrew install-binary v0.10.29
     install ...
 
     # or
-    $ nodebrew install latest # latest version
-    $ nodebrew install stable # stable version
-    $ nodebrew install v0.6.x # v0.6 latest
-    $ nodebrew install 0.6.0  # without `v`
+    $ nodebrew install-binary latest # latest version
+    $ nodebrew install-binary stable # stable version
+    $ nodebrew install-binary v0.10.x # v0.10 latest
+    $ nodebrew install-binary 0.10.29  # without `v`
 
 Switch use version.
 
-    $ nodebrew use v0.6.0
+    $ nodebrew use v0.10.29
     $ node -v
-    v0.6.0
+    v0.10.29
 
     # or
     $ nodebrew use latest # latest version
     $ nodebrew use stable # stable version
     $ nodebrew use v0.6.x # v0.6 latest
-    $ nodebrew use 0.6.0  # without `v`
+    $ nodebrew use 0.10.29  # without `v`
 
 View all installed version list or ls.
 
     $ nodebrew ls
-    v0.4.0
-    v0.6.0
+    v0.8.28
+    v0.10.29
 
-    current: v0.6.0
+    current: v0.10.29
 
 Remote version view.
 
@@ -80,26 +80,26 @@ Remote and local version view.
     ...
 
     Local:
-    v0.4.0
-    v0.6.0
+    v0.8.28
+    v0.10.29
 
-    current: v0.6.0
+    current: v0.10.29
 
 Set alias.
 
-    $ nodebrew alias default v0.4.7
-    default -> v0.4.7
+    $ nodebrew alias default v0.8.28
+    default -> v0.8.28
 
     $ nodebrew use default
-    use v0.4.7
+    use v0.8.28
 
     $ nodebrew unalias default
     remove default
 
 Uninstall.
 
-    $ nodebrew uninstall v0.6.0
-    v0.6.0 uninstalled
+    $ nodebrew uninstall v0.10.29
+    v0.10.29 uninstalled
 
 Update nodebrew.
 
@@ -107,7 +107,17 @@ Update nodebrew.
 
 Execute other version temporary.
 
-    $ nodebrew exec v0.6.0 -- node app.js
+    $ nodebrew exec v0.10.29 -- node app.js
+
+## Install from source
+
+We recommend to use the `install-binary` command to install. If you want to compile from source, you can use `install` command.
+
+    $ nodebrew install v0.10.29
+
+The `install` command can pass configure options of Node.js.
+
+    $ nodebrew install v0.11.14 --v8-options=--harmony
 
 ## Commands
 
