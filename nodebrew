@@ -25,14 +25,14 @@ sub new {
         nodebrew_url
         bash_completion_url
         zsh_completion_url
-        remote_list_url
         fetcher
+        remote_list_url
         tarballs
         tarballs_binary
     /;
 
     for (@props) {
-        if ($opt{$_}) {
+        if (defined $opt{$_}) {
             $self->{$_} = $opt{$_};
         }
         else {
@@ -51,6 +51,7 @@ sub init {
 
     $self->{src_dir} = $self->{brew_dir} . '/src';
     $self->{node_dir} = $self->{brew_dir} . '/node';
+    $self->{iojs_dir} = $self->{brew_dir} . '/iojs';
     $self->{current} = $self->{brew_dir} . '/current';
     $self->{default_dir} = $self->{brew_dir} . '/default';
     $self->{alias_file} = $self->{brew_dir} . '/alias';
@@ -63,6 +64,7 @@ sub run {
 
     $command ||= '';
     $command =~ s/-/_/g;
+
     if (my $cmd = $self->can("_cmd_$command")) {
         $cmd->($self, $args);
     }
@@ -75,13 +77,14 @@ sub _cmd_use {
     my ($self, $args) = @_;
 
     my $version = $self->find_available_version($args->[0]);
-    my $target = "$self->{node_dir}/$version";
+    my $target = $self->get_install_dir . "/$version";
     my $nodebrew_path = "$target/bin/nodebrew";
 
     unlink $self->{current} if -l $self->{current};
     symlink $target, $self->{current};
     symlink "$self->{brew_dir}/nodebrew", $nodebrew_path unless -l $nodebrew_path;
-    print "use $version\n";
+    my $prefix = $self->is_iojs ? 'io@' : '';
+    print "use $prefix$version\n";
 }
 
 sub _cmd_install {
@@ -90,9 +93,9 @@ sub _cmd_install {
     my $v = shift @$args;
     my $configure_opts = join ' ', @$args;
     my $version = $self->find_install_version($v);
-    my $tarball_url = $self->get_tarball($self->{tarballs}, $version);
+    my $tarball_url = $self->get_tarball($self->get_tarballs_url, $version);
     my $src_dir = "$self->{src_dir}/$version";
-    my $target_name = "node-$version";
+    my $target_name = $self->get_type . "-$version";
     my $tarball_path = "$src_dir/$target_name.tar.gz";
 
     $self->clean($version);
@@ -104,9 +107,10 @@ sub _cmd_install {
 
     Nodebrew::Utils::extract_tar($tarball_path, $src_dir);
 
+    my $install_dir = $self->get_install_dir;
     system qq[
         cd "$src_dir/$target_name" &&
-        ./configure --prefix="$self->{node_dir}/$version" $configure_opts &&
+        ./configure --prefix="$install_dir/$version" $configure_opts &&
         make &&
         make install
     ];
@@ -117,12 +121,12 @@ sub _cmd_install_binary {
 
     my $version = $self->find_install_version($args->[0]);
     my ($platform, $arch) = Nodebrew::Utils::system_info();
-    my $tarball_url = $self->get_tarball($self->{tarballs_binary}, $version, {
+    my $tarball_url = $self->get_tarball($self->get_tarballs_binary_url, $version, {
         platform => $platform,
         arch     => $arch,
     });
     my $src_dir = "$self->{src_dir}/$version";
-    my $target_name = "node-$version-$platform-$arch";
+    my $target_name = $self->get_type . "-$version-$platform-$arch";
     my $tarball_path = "$src_dir/$target_name.tar.gz";
 
     $self->clean($version);
@@ -134,31 +138,38 @@ sub _cmd_install_binary {
 
     Nodebrew::Utils::extract_tar($tarball_path, $src_dir);
 
-    rename "$src_dir/$target_name", "$self->{node_dir}/$version";
+    rename "$src_dir/$target_name", $self->get_install_dir . "/$version" or die "Error: $!";
 
     print "Install successful\n";
 }
 
 sub _cmd_uninstall {
     my ($self, $args) = @_;
-    my $version = _v($args->[0]) or return print "version is required\n";
-    my $target = "$self->{node_dir}/$version";
+    my $version = $self->normalize_version($args->[0]);
+    my $target = $self->get_install_dir . "/$version";
     my $current_version = $self->get_current_version();
 
     error_and_exit("$version is not installed") unless -e $target;
     rmtree $target;
+
+    $version = "io\@$version" if ($self->is_iojs);
     if ($current_version eq $version) {
         $self->use_default();
     }
+
     print "$version uninstalled\n";
 }
 
 sub _cmd_list {
     my ($self, $args) = @_;
-    my $versions = $self->get_local_version();
 
-    print scalar @$versions
-        ? join("\n", @{Nodebrew::Utils::sort_version($versions)})
+    my @node_versions = @{$self->get_local_version('node')};
+    my @iojs_versions = map { "io\@$_"; } @{$self->get_local_version('iojs')};
+    my @versions;
+    push @versions, @node_versions, @iojs_versions;
+
+    print scalar @versions
+        ? join("\n", @{Nodebrew::Utils::sort_version(\@versions)})
         : "not installed";
     print "\n\ncurrent: " . $self->get_current_version() . "\n";
 }
@@ -171,12 +182,16 @@ sub _cmd_ls {
 
 sub _cmd_ls_remote {
     my ($self, $args) = @_;
-    my $remote_version
-        = Nodebrew::Utils::sort_version($self->get_remote_version());
+
+    my @node_versions = @{Nodebrew::Utils::sort_version($self->get_remote_version('node'))};
+    my @iojs_versions = map { "io\@$_"; } @{Nodebrew::Utils::sort_version($self->get_remote_version('iojs'))};
+    my @versions;
+    push @versions, @node_versions, @iojs_versions;
+
     my $i = 0;
     my %tmp;
 
-    for (@$remote_version) {
+    for (@versions) {
         my ($v1, $v2, $v3) = $_ =~ m/v(\d+)\.(\d+)\.(\d+)/;
         if (!$tmp{"$v1.$v2"}++) {
             print "\n\n" if $i;
@@ -268,6 +283,7 @@ sub _cmd_setup_dirs {
     mkdir $self->{brew_dir} unless -e $self->{brew_dir};
     mkdir $self->{src_dir} unless -e $self->{src_dir};
     mkdir $self->{node_dir} unless -e $self->{node_dir};
+    mkdir $self->{iojs_dir} unless -e $self->{iojs_dir};
     mkdir $self->{default_dir} unless -e $self->{default_dir};
     mkdir "$self->{default_dir}/bin" unless -e "$self->{default_dir}/bin";
 }
@@ -275,7 +291,7 @@ sub _cmd_setup_dirs {
 sub _cmd_clean {
     my ($self, $args) = @_;
 
-    my $version = _v($args->[0]) or error_and_exit('version is required');
+    my $version = $self->normalize_version($args->[0]);
 
     $self->clean($version);
     print "clean $version\n";
@@ -292,13 +308,15 @@ sub _cmd_migrate_package {
     my ($self, $args) = @_;
 
     my $current_version = $self->get_current_version();
+    my $is_iojs = $current_version =~ s/^io@//;
     error_and_exit("version not selected") if $current_version eq 'none';
 
-    my @current_packages = $self->get_packages($current_version);
+    my $current_type = $current_version =~ $is_iojs ? 'iojs' : 'node';
+    my @current_packages = $self->get_packages($current_version, $current_type);
 
     my $version = $self->find_available_version($args->[0]);
     my @target_packages = $self->get_packages($version);
-    my $package_dir = "$self->{node_dir}/$version/lib/node_modules";
+    my $package_dir = $self->get_install_dir . "/$version/lib/node_modules";
 
     my (@success, @fail);
     foreach my $package_name (@target_packages) {
@@ -330,7 +348,7 @@ sub _cmd_exec {
 
     my $version = $self->find_available_version(shift @$args);
 
-    $ENV{PATH} = "$self->{node_dir}/$version/bin:$ENV{PATH}";
+    $ENV{PATH} = $self->get_install_dir . "/$version/bin:$ENV{PATH}";
 
     shift @$args if $args->[0] eq '--';
     my $command = join ' ', @$args;
@@ -362,15 +380,22 @@ Usage:
     nodebrew exec <version> -- <command>  Execute <command> specified <version>
 
 Example:
-    nodebrew install v0.10.22     Install a specific version number
-    nodebrew use v0.10.22         Use a specific version number
+    # install from binary
+    nodebrew install-binary v0.10.22
+
+    # use a specific version number
+    nodebrew use v0.10.22
+
+    # io.js
+    nodebrew install-binary io\@v1.0.0
+    nodebrew use io\@v1.0.0
 ...
 }
 
 sub find_install_version {
-    my ($self, $arg) = @_;
+    my ($self, $v) = @_;
 
-    my $version = _v($arg) or error_and_exit('version is required');
+    my $version = $self->normalize_version($v);
 
     if ($version !~ m/v\d+\.\d+\.\d+/) {
         $version = Nodebrew::Utils::find_version(
@@ -380,7 +405,7 @@ sub find_install_version {
 
     error_and_exit('version not found') unless $version;
     error_and_exit("$version is already installed")
-        if -e "$self->{node_dir}/$version";
+        if -e $self->get_install_dir . "/$version";
 
     return $version;
 }
@@ -389,9 +414,7 @@ sub find_available_version {
     my ($self, $arg) = @_;
 
     my $alias = Nodebrew::Config->new($self->{alias_file});
-    my $target_version = _v($alias->get($arg) || $arg)
-        or error_and_exit('version is required');
-
+    my $target_version = $self->normalize_version($alias->get($arg) || $arg);
     my $local_version = $self->get_local_version();
     my $version = Nodebrew::Utils::find_version($target_version, $local_version)
         or error_and_exit("$target_version is not installed");
@@ -441,6 +464,24 @@ sub clean {
     }
 }
 
+sub is_iojs {
+    my $self = shift;
+
+    return $self->{iojs};
+}
+
+sub is_node {
+    my $self = shift;
+
+    return !$self->{iojs};
+}
+
+sub get_type {
+    my $self = shift;
+
+    return $self->is_iojs ? 'iojs' : 'node';
+}
+
 sub use_default {
     my $self = shift;
 
@@ -453,8 +494,10 @@ sub get_current_version {
 
     return 'none' unless -l $self->{current};
     my $current_version = readlink $self->{current};
-    $current_version =~ m!^$self->{node_dir}/(.+)!;
-    return $1 || 'none';
+
+    return $1 if $current_version =~ m!^$self->{node_dir}/(.+)!;
+    return "io\@$1" if $current_version =~ m!^$self->{iojs_dir}/(.+)!;
+    return 'none';
 }
 
 sub fetch_nodebrew {
@@ -483,10 +526,10 @@ sub make_file {
 }
 
 sub get_local_version {
-    my $self = shift;
+    my ($self, $type) = @_;
 
     my @versions;
-    opendir my $dh, $self->{node_dir} or die $!;
+    opendir my $dh, $self->get_install_dir($type) or die $!;
     while (my $dir = readdir $dh) {
         push @versions, $dir unless $dir =~ '^\.\.?$';
     }
@@ -494,10 +537,40 @@ sub get_local_version {
     return \@versions;
 }
 
-sub get_remote_version {
+sub get_remote_list_url {
+    my ($self, $type) = @_;
+
+    return $self->{remote_list_url}->{$type || $self->get_type}
+}
+
+sub get_tarballs_url {
     my $self = shift;
 
-    my $html = $self->{fetcher}->fetch($self->{remote_list_url});
+    return $self->{tarballs}->{$self->get_type}
+}
+
+sub get_tarballs_binary_url {
+    my $self = shift;
+
+    return $self->{tarballs_binary}->{$self->get_type}
+}
+
+sub get_install_dir {
+    my ($self, $type) = @_;
+
+    my $is_iojs = ($type && $type eq 'iojs') || $self->is_iojs;
+    my $dir = $is_iojs ? $self->{iojs_dir} : $self->{node_dir};
+
+    mkdir $dir unless -e $dir;
+
+    return $dir;
+}
+
+sub get_remote_version {
+    my ($self, $type) = @_;
+
+    my $url = $self->get_remote_list_url($type);
+    my $html = $self->{fetcher}->fetch($url);
     my @versions;
     my %tmp;
     while ($html =~ m/(\d+\.\d+\.\d+)/g) {
@@ -509,9 +582,10 @@ sub get_remote_version {
 }
 
 sub get_packages {
-    my ($self, $version) = @_;
+    my ($self, $version, $type) = @_;
 
-    my $module_dir = "$self->{node_dir}/$version/lib/node_modules";
+    my $install_dir = $self->get_install_dir($type);
+    my $module_dir = "$install_dir/$version/lib/node_modules";
     my @packages;
 
     opendir my $dh, $module_dir or die $!;
@@ -529,11 +603,16 @@ sub error_and_exit {
     exit 1;
 }
 
-sub _v {
-    my $version = shift;
+sub normalize_version {
+    my ($self, $v) = @_;
 
-    return unless $version;
-    return $version =~ m/^\d+\.?(\d+|x)?\.?(\d+|x)?$/ ? "v$version" : $version;
+    error_and_exit('version is required') unless $v;
+
+    if ($self->is_node) {
+        $self->{iojs} = $v =~ s/^io@//;
+    }
+
+    return $v =~ m/^\d+\.?(\d+|x)?\.?(\d+|x)?$/ ? "v$v" : $v;
 }
 
 package Nodebrew::Utils;
@@ -800,16 +879,30 @@ sub main {
         brew_dir        => $brew_dir,
         nodebrew_url    => $nodebrew_url,
         bash_completion_url => $bash_completion_url,
-        zsh_completion_url => $zsh_completion_url,
-        remote_list_url => 'http://nodejs.org/dist/',
+        zsh_completion_url  => $zsh_completion_url,
         fetcher         => Nodebrew::Fetcher::get($fetcher_type),
-        tarballs        => [
-            "http://nodejs.org/dist/#{version}/node-#{version}.tar.gz",
-            "http://nodejs.org/dist/node-#{version}.tar.gz",
-        ],
-        tarballs_binary => [
-            "http://nodejs.org/dist/#{version}/node-#{version}-#{platform}-#{arch}.tar.gz",
-        ],
+        remote_list_url => {
+            node => 'http://nodejs.org/dist/',
+            iojs => 'https://iojs.org/download/release/',
+        },
+        tarballs => {
+            node => [
+                "http://nodejs.org/dist/#{version}/node-#{version}.tar.gz",
+                "http://nodejs.org/dist/node-#{version}.tar.gz",
+            ],
+            iojs => [
+                "https://iojs.org/download/release/#{version}/iojs-#{version}.tar.gz",
+            ],
+        },
+        tarballs_binary => {
+            node => [
+                "http://nodejs.org/dist/#{version}/node-#{version}-#{platform}-#{arch}.tar.gz",
+            ],
+            iojs => [
+                "https://iojs.org/download/release/#{version}/iojs-#{version}-#{platform}-#{arch}.tar.gz",
+            ],
+        },
+        iojs => 0,
     )->run($command, $args);
 }
 

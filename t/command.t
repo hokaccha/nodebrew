@@ -73,16 +73,31 @@ sub run_test {
         nodebrew_url => "$url/nodebrew",
         bash_completion_url => "$url/completions/bash/nodebrew-completion",
         zsh_completion_url => "$url/completions/zsh/_nodebrew",
-        remote_list_url => "$url/list.html",
         fetcher => Nodebrew::Fetcher::get('curl'),
-        tarballs => [
-            "$url/notfound",
-            "$url/install/node-#{version}.tar.gz",
-        ],
-        tarballs_binary => [
-            "$url/notfound",
-            "$url/install/node-#{version}-#{platform}-#{arch}.tar.gz",
-        ]
+        remote_list_url => {
+            node => "$url/list.html",
+            iojs => "$url/iolist.html",
+        },
+        tarballs => {
+            node => [
+                "$url/notfound",
+                "$url/install/node-#{version}.tar.gz",
+            ],
+            iojs => [
+                "$url/notfound",
+                "$url/install/iojs-#{version}.tar.gz",
+            ],
+        },
+        tarballs_binary => {
+            node => [
+                "$url/notfound",
+                "$url/install/node-#{version}-#{platform}-#{arch}.tar.gz",
+            ],
+            iojs => [
+                "$url/notfound",
+                "$url/install/iojs-#{version}-#{platform}-#{arch}.tar.gz",
+            ],
+        },
     );
     my $run = get_run($nodebrew);
     mkdir $brew_dir;
@@ -106,6 +121,7 @@ sub run_test {
     ok !-e "$nodebrew->{brew_dir}/nodebrew";
     ok !-e "$nodebrew->{src_dir}";
     ok !-e "$nodebrew->{node_dir}";
+    ok !-e "$nodebrew->{iojs_dir}";
     ok !-e "$nodebrew->{default_dir}";
     ok !-e "$nodebrew->{current}";
 
@@ -114,6 +130,7 @@ sub run_test {
     is read_file("$nodebrew->{brew_dir}/nodebrew"), 'nodebrew source';
     ok -e "$nodebrew->{src_dir}";
     ok -e "$nodebrew->{node_dir}";
+    ok -e "$nodebrew->{iojs_dir}";
     ok -e "$nodebrew->{default_dir}";
     is readlink "$nodebrew->{current}", "$nodebrew->{default_dir}";
 
