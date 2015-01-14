@@ -31,6 +31,7 @@ my $nodebrew = Nodebrew->new(
 is $nodebrew->{brew_dir}, $brew_dir;
 is $nodebrew->{src_dir}, "$brew_dir/src";
 is $nodebrew->{node_dir}, "$brew_dir/node";
+is $nodebrew->{iojs_dir}, "$brew_dir/iojs";
 is $nodebrew->{current}, "$brew_dir/current";
 is $nodebrew->{default_dir}, "$brew_dir/default";
 is $nodebrew->{nodebrew_url}, $nodebrew_url;

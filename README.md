@@ -119,6 +119,16 @@ You can pass configure options of Node.js.
 
     $ nodebrew install v0.11.14 --v8-options=--harmony
 
+## io.js
+
+    $ nodebrew install-binary io@v1.0.0
+    $ nodebrew use io@v1.0.0
+    $ nodebrew ls
+    v0.10.33
+    io@v1.0.0
+
+    current: io@v1.0.0
+
 ## Commands
 
     $ nodebrew help                         Show this message
