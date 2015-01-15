@@ -6,16 +6,16 @@ Node.js version manager.
 
 ## Install
 
-Using curl one liner.
+One liner curl install.
 
     $ curl -L git.io/nodebrew | perl - setup
 
-Or download and setup.
+Or, download and setup.
 
     $ wget git.io/nodebrew
     $ perl nodebrew setup
 
-Add PATH setting your shell config file, .bashrc or .zshrc.
+Add `PATH` setting your shell config file (`.bashrc` or `.zshrc)`.
 
     export PATH=$HOME/.nodebrew/current/bin:$PATH
 
@@ -29,7 +29,8 @@ Confirm.
 
 ## ENV
 
-`NODEBREW_ROOT` env var can change nodebrew's home directory. default is `$HOME/.nodebrew`.
+`NODEBREW_ROOT` environment variable can change nodebrew's home directory. 
+The default is `$HOME/.nodebrew`.
 
     export NODEBREW_ROOT=/path/to/.nodebrew
 
@@ -58,7 +59,7 @@ Switch use version.
     $ nodebrew use v0.6.x # v0.6 latest
     $ nodebrew use 0.10.29  # without `v`
 
-View all installed version list or ls.
+View all installed versions: `list` or `ls`.
 
     $ nodebrew ls
     v0.8.28
@@ -111,11 +112,12 @@ Execute other version temporary.
 
 ## Install from source
 
-We recommend to use the `install-binary` command to install. If you want to compile from source, you can use `install` command.
+We recommend to use the `install-binary` command to install. 
+If you want to compile from source, you can use `install` command.
 
     $ nodebrew install v0.10.29
 
-You can pass configure options of Node.js.
+Pass configure options to Node.js.
 
     $ nodebrew install v0.11.14 --v8-options=--harmony
 
