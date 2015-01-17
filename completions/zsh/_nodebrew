@@ -31,7 +31,7 @@ case $state in
   ;;
   args)
     local -a _versions _alias
-    _versions=( $(_call_program commands nodebrew ls 2>/dev/null | grep '^v') )
+    _versions=( $(_call_program commands nodebrew ls 2>/dev/null | grep '^v\|^io@') )
     _alias=( $(_call_program commands nodebrew alias 2>/dev/null | sed 's/->.*//') )
     case $line[1] in
       use|migrate-package|exec)
