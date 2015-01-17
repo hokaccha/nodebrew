@@ -12,7 +12,7 @@ _nodebrew()
         COMPREPLY=( $( compgen -W "${opts}" ${cur} ) )
     elif [ $COMP_CWORD = 2 ];then
         local _alias _versions
-        _versions=$(nodebrew ls 2> /dev/null | grep '^v')
+        _versions=$(nodebrew ls 2> /dev/null | grep '^v\|^io@')
         _alias=$(nodebrew alias 2> /dev/null | sed 's/->.*//')
 
         case "${prev}" in
