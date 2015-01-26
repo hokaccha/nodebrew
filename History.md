@@ -1,3 +1,9 @@
+0.8.1  / 2015-01-26
+====================
+
+* Update shell completions, support iojs
+* Fix install-binary iojs in x86 linux #34
+
 0.8.0  / 2015-01-14
 ====================
 
