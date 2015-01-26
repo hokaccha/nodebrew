@@ -27,10 +27,6 @@ our $brew_dir = "$FindBin::Bin/.nodebrew";
         print "$msg\n";
         die; # instead of exit
     };
-
-    *Nodebrew::Utils::system_info = sub {
-        return ('linux', 'x86');
-    };
 }
 
 sub init_nodebrew {
@@ -137,6 +133,9 @@ sub setup {
 
     `cp -R $data_dir/node-binary-base $data_dir/install/node-v0.4.0-linux-x86`;
     `cd $data_dir/install && tar -zcf node-v0.4.0-linux-x86.tar.gz node-v0.4.0-linux-x86`;
+
+    `cp -R $data_dir/iojs-binary-base $data_dir/install/iojs-v1.0.0-linux-ia32`;
+    `cd $data_dir/install && tar -zcf iojs-v1.0.0-linux-x86.tar.gz iojs-v1.0.0-linux-ia32`;
 }
 
 sub clean {

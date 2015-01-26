@@ -125,8 +125,9 @@ sub _cmd_install_binary {
         platform => $platform,
         arch     => $arch,
     });
+    my $type = $self->get_type();
     my $src_dir = "$self->{src_dir}/$version";
-    my $target_name = $self->get_type . "-$version-$platform-$arch";
+    my $target_name = "$type-$version-$platform-$arch";
     my $tarball_path = "$src_dir/$target_name.tar.gz";
 
     $self->clean($version);
@@ -137,6 +138,11 @@ sub _cmd_install_binary {
         or error_and_exit("download faild: $tarball_url");
 
     Nodebrew::Utils::extract_tar($tarball_path, $src_dir);
+
+    # https://github.com/hokaccha/nodebrew/issues/34
+    if ($type eq 'iojs' && $platform eq 'linux' && $arch eq 'x86') {
+        $target_name =~ s/x86$/ia32/;
+    }
 
     rename "$src_dir/$target_name", $self->get_install_dir . "/$version" or die "Error: $!";
 
