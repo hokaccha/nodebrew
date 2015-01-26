@@ -4,3 +4,4 @@ test_requires 'Plack::Loader';
 test_requires 'Plack::Middleware::Static';
 test_requires 'IO::Capture::Stdout';
 test_requires 'File::Read';
+test_requires 'Test::MockObject::Extends';
