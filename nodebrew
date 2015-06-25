@@ -317,7 +317,7 @@ sub _cmd_migrate_package {
     my $is_iojs = $current_version =~ s/^io@//;
     error_and_exit("version not selected") if $current_version eq 'none';
 
-    my $current_type = $current_version =~ $is_iojs ? 'iojs' : 'node';
+    my $current_type = $is_iojs ? 'iojs' : 'node';
     my @current_packages = $self->get_packages($current_version, $current_type);
 
     my $version = $self->find_available_version($args->[0]);
