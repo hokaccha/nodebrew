@@ -1,6 +1,11 @@
 0.8.2  / 2015-06-25
 ====================
 
+* Add nightly & next-nightly install #38 (@yosuke-furukawa)
+
+0.8.2  / 2015-06-25
+====================
+
 * Fix migrate-package #37 (@kysnm)
 
 0.8.1  / 2015-01-26
