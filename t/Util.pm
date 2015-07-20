@@ -25,7 +25,7 @@ our $brew_dir = "$FindBin::Bin/.nodebrew";
     *Nodebrew::error_and_exit = sub {
         my $msg = shift;
         print "$msg\n";
-        die; # instead of exit
+        die $msg; # instead of exit
     };
 }
 
@@ -53,7 +53,7 @@ sub init_nodebrew {
             ],
             iojs => [
                 "$url/notfound",
-                "$url/install/iojs-#{version}.tar.gz",
+                "$url/install/#{release}/iojs-#{version}.tar.gz",
             ],
         },
         tarballs_binary => {
@@ -63,7 +63,7 @@ sub init_nodebrew {
             ],
             iojs => [
                 "$url/notfound",
-                "$url/install/iojs-#{version}-#{platform}-#{arch}.tar.gz",
+                "$url/install/#{release}/iojs-#{version}-#{platform}-#{arch}.tar.gz",
             ],
         },
     );
@@ -134,8 +134,13 @@ sub setup {
     `cp -R $data_dir/node-binary-base $data_dir/install/node-v0.4.0-linux-x86`;
     `cd $data_dir/install && tar -zcf node-v0.4.0-linux-x86.tar.gz node-v0.4.0-linux-x86`;
 
-    `cp -R $data_dir/iojs-binary-base $data_dir/install/iojs-v1.0.0-linux-ia32`;
-    `cd $data_dir/install && tar -zcf iojs-v1.0.0-linux-x86.tar.gz iojs-v1.0.0-linux-ia32`;
+    mkdir "$data_dir/install/release";
+    `cp -R $data_dir/release/iojs-binary-base $data_dir/install/release/iojs-v1.0.0-linux-ia32`;
+    `cd $data_dir/install/release && tar -zcf iojs-v1.0.0-linux-x86.tar.gz iojs-v1.0.0-linux-ia32`;
+
+    mkdir "$data_dir/install/next-nightly";
+    `cp -R $data_dir/next-nightly/iojs-binary-base $data_dir/install/next-nightly/iojs-v3.0.0-next-nightly20150717cbec3ee19d-linux-ia32`;
+    `cd $data_dir/install/next-nightly && tar -zcf iojs-v3.0.0-next-nightly20150717cbec3ee19d-linux-x86.tar.gz iojs-v3.0.0-next-nightly20150717cbec3ee19d-linux-ia32`;
 }
 
 sub clean {

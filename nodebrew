@@ -92,8 +92,9 @@ sub _cmd_install {
 
     my $v = shift @$args;
     my $configure_opts = join ' ', @$args;
-    my $version = $self->find_install_version($v);
-    my $tarball_url = $self->get_tarball($self->get_tarballs_url, $version);
+    my ($version, $release) = $self->find_install_version($v);
+    my $opts = +{ release => $release || "release" };
+    my $tarball_url = $self->get_tarball($self->get_tarballs_url, $version, $opts);
     my $src_dir = "$self->{src_dir}/$version";
     my $target_name = $self->get_type . "-$version";
     my $tarball_path = "$src_dir/$target_name.tar.gz";
@@ -119,11 +120,12 @@ sub _cmd_install {
 sub _cmd_install_binary {
     my ($self, $args) = @_;
 
-    my $version = $self->find_install_version($args->[0]);
+    my ($version, $release) = $self->find_install_version($args->[0]);
     my ($platform, $arch) = Nodebrew::Utils::system_info();
     my $tarball_url = $self->get_tarball($self->get_tarballs_binary_url, $version, {
         platform => $platform,
         arch     => $arch,
+        release  => $release || "release"
     });
     my $type = $self->get_type();
     my $src_dir = "$self->{src_dir}/$version";
@@ -398,14 +400,30 @@ Example:
 ...
 }
 
+sub get_nightly {
+    my ($self, $version) = @_;
+
+    my $type = $self->get_type();
+    my $url = $self->get_remote_list_url($type, $version);
+    my $html = $self->{fetcher}->fetch($url);
+    my $latest;
+    while ($html =~ m/(v\d+\.\d+\.\d+-$version.*)\/"/g) {
+      $latest = $1;
+    }
+    return ($latest, $version);
+}
+
 sub find_install_version {
     my ($self, $v) = @_;
 
     my $version = $self->normalize_version($v);
+    my $release;
 
-    if ($version !~ m/v\d+\.\d+\.\d+/) {
-        $version = Nodebrew::Utils::find_version(
-            $version, $self->get_remote_version()
+    if ($version eq 'nightly' || $version eq 'next-nightly') {
+        ($version, $release) = $self->get_nightly($version);
+    } elsif ($version !~ m/v\d+\.\d+\.\d+/) {
+        ($version, $release) = Nodebrew::Utils::find_version(
+            $version, $self->get_remote_version(undef, $version)
         );
     }
 
@@ -413,7 +431,7 @@ sub find_install_version {
     error_and_exit("$version is already installed")
         if -e $self->get_install_dir . "/$version";
 
-    return $version;
+    return ($version, $release);
 }
 
 sub find_available_version {
@@ -436,6 +454,7 @@ sub get_tarball {
 
     $vars ||= {};
     $vars->{version} = $version;
+    $vars->{release} ||= "release";
 
     for (@$tarballs) {
         my $url = Nodebrew::Utils::apply_vars($_, $vars);
@@ -544,9 +563,15 @@ sub get_local_version {
 }
 
 sub get_remote_list_url {
-    my ($self, $type) = @_;
+    my ($self, $type, $release) = @_;
 
-    return $self->{remote_list_url}->{$type || $self->get_type}
+    my $url = $self->{remote_list_url}->{$type || $self->get_type};
+    $release ||= 'release';
+    my $opt = +{ 'release' => $release };
+    if ($release eq 'nightly' || $release eq 'next-nightly') {
+      $opt = +{ 'release' => $release };
+    }
+    return Nodebrew::Utils::apply_vars($url, $opt);
 }
 
 sub get_tarballs_url {
@@ -573,9 +598,9 @@ sub get_install_dir {
 }
 
 sub get_remote_version {
-    my ($self, $type) = @_;
+    my ($self, $type, $version) = @_;
 
-    my $url = $self->get_remote_list_url($type);
+    my $url = $self->get_remote_list_url($type, $version);
     my $html = $self->{fetcher}->fetch($url);
     my @versions;
     my %tmp;
@@ -644,6 +669,7 @@ sub find_version {
 
     return undef unless scalar @versions;
     return pop @versions if $version eq 'latest';
+
 
     if ($version eq 'stable') {
         for (reverse @versions) {
@@ -889,7 +915,7 @@ sub main {
         fetcher         => Nodebrew::Fetcher::get($fetcher_type),
         remote_list_url => {
             node => 'http://nodejs.org/dist/',
-            iojs => 'https://iojs.org/download/release/',
+            iojs => 'https://iojs.org/download/#{release}/',
         },
         tarballs => {
             node => [
@@ -897,7 +923,7 @@ sub main {
                 "http://nodejs.org/dist/node-#{version}.tar.gz",
             ],
             iojs => [
-                "https://iojs.org/download/release/#{version}/iojs-#{version}.tar.gz",
+                "https://iojs.org/download/#{release}/#{version}/iojs-#{version}.tar.gz",
             ],
         },
         tarballs_binary => {
@@ -905,7 +931,7 @@ sub main {
                 "http://nodejs.org/dist/#{version}/node-#{version}-#{platform}-#{arch}.tar.gz",
             ],
             iojs => [
-                "https://iojs.org/download/release/#{version}/iojs-#{version}-#{platform}-#{arch}.tar.gz",
+                "https://iojs.org/download/#{release}/#{version}/iojs-#{version}-#{platform}-#{arch}.tar.gz",
             ],
         },
         iojs => 0,
