@@ -914,13 +914,13 @@ sub main {
         zsh_completion_url  => $zsh_completion_url,
         fetcher         => Nodebrew::Fetcher::get($fetcher_type),
         remote_list_url => {
-            node => 'http://nodejs.org/dist/',
+            node => 'https://nodejs.org/dist/',
             iojs => 'https://iojs.org/download/#{release}/',
         },
         tarballs => {
             node => [
-                "http://nodejs.org/dist/#{version}/node-#{version}.tar.gz",
-                "http://nodejs.org/dist/node-#{version}.tar.gz",
+                "https://nodejs.org/dist/#{version}/node-#{version}.tar.gz",
+                "https://nodejs.org/dist/node-#{version}.tar.gz",
             ],
             iojs => [
                 "https://iojs.org/download/#{release}/#{version}/iojs-#{version}.tar.gz",
@@ -928,7 +928,7 @@ sub main {
         },
         tarballs_binary => {
             node => [
-                "http://nodejs.org/dist/#{version}/node-#{version}-#{platform}-#{arch}.tar.gz",
+                "https://nodejs.org/dist/#{version}/node-#{version}-#{platform}-#{arch}.tar.gz",
             ],
             iojs => [
                 "https://iojs.org/download/#{release}/#{version}/iojs-#{version}-#{platform}-#{arch}.tar.gz",
