@@ -128,7 +128,16 @@ is Nodebrew::Utils::apply_vars('key-#{key1}-#{key2}-#{key1}', {
         return ('FOO', undef, undef, undef, 'armv6l');
     };
     my ($sysname, $arch) = Nodebrew::Utils::system_info();
-    is $arch, 'arm-pi';
+    is $arch, 'armv6l';
+}
+
+{
+    no warnings;
+    *POSIX::uname = sub {
+        return ('FOO', undef, undef, undef, 'armv7l');
+    };
+    my ($sysname, $arch) = Nodebrew::Utils::system_info();
+    is $arch, 'armv7l';
 }
 
 {
