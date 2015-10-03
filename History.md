@@ -1,4 +1,9 @@
-0.8.2  / 2015-06-25
+0.9.1  / 2015-06-25
+====================
+
+* Fix `install-binary` on armv6l and armv7l #44
+
+0.9.0  / 2015-06-25
 ====================
 
 * Add nightly & next-nightly install #38 (@yosuke-furukawa)
