@@ -122,6 +122,10 @@ sub _cmd_install_binary {
 
     my ($version, $release) = $self->find_install_version($args->[0]);
     my ($platform, $arch) = Nodebrew::Utils::system_info();
+    if ($arch eq 'armv6l' && $version =~ m/v0\.\d+\.\d+/) {
+        # nodev0.x.x on armv6l(RaspberryPi1)
+        $arch = 'arm-pi';
+    }
     my $tarball_url = $self->get_tarball($self->get_tarballs_binary_url, $version, {
         platform => $platform,
         arch     => $arch,
@@ -712,7 +716,9 @@ sub system_info {
     } elsif ($machine =~ m/i\d86/) {
         $arch = 'x86';
     } elsif ($machine =~ m/armv6l/) {
-        $arch = 'arm-pi';
+        $arch = 'armv6l';
+    } elsif ($machine =~ m/armv7l/) {
+        $arch = 'armv7l';
     } elsif ($sysname =~ m/sunos/i) {
         # SunOS $machine => 'i86pc'. but use 64bit kernel.
         # Solaris 11 not support 32bit kernel.
