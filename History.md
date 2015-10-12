@@ -1,4 +1,9 @@
-0.9.1  / 2015-06-25
+0.9.2  / 2015-010-25
+====================
+
+* Change behavior of stable keyword
+
+0.9.1  / 2015-10-03
 ====================
 
 * Fix `install-binary` on armv6l and armv7l #44
