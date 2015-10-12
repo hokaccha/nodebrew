@@ -672,16 +672,7 @@ sub find_version {
     my @versions = @$versions;
 
     return undef unless scalar @versions;
-    return pop @versions if $version eq 'latest';
-
-
-    if ($version eq 'stable') {
-        for (reverse @versions) {
-            my ($miner) = m/^v\d+\.(\d+)/;
-            return $_ if $miner % 2 == 0;
-        }
-        return;
-    }
+    return pop @versions if $version eq 'latest' || $version eq 'stable';
 
     my @v = map {
         $_ && $_ eq 'x' ? undef : $_

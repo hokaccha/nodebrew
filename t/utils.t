@@ -69,7 +69,7 @@ is_deeply $versions, [
 is Nodebrew::Utils::find_version('stable', [
     'v0.0.1',
     'v0.6.2',
-    'v0.7.8']), 'v0.6.2';
+    'v0.7.8']), 'v0.7.8';
 
 is Nodebrew::Utils::find_version('stable', [
     'v0.0.1',
@@ -79,7 +79,7 @@ is Nodebrew::Utils::find_version('stable', [
 is Nodebrew::Utils::find_version('stable', [
     'v0.0.1',
     'v1.5.0',
-    'v2.0.0']), 'v2.0.0';
+    'v4.1.0']), 'v4.1.0';
 
 {
     my ($command, $args, $opt)
