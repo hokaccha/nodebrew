@@ -31,7 +31,7 @@ $nodebrew->run('alias', ['0.6', '0.6.x']);
 $nodebrew->run('use', ['0.6']);
 like $nodebrew->run('list'), qr/current: v0.6.1/;
 
-is $nodebrew->run('unalias', ['foo']), "remove foo\n";
+is $nodebrew->run('unalias', ['foo']), "Removed foo\n";
 is $nodebrew->run('alias'), "0.6 -> 0.6.x\nhoge -> fuga\n";
 
 is $nodebrew->run('unalias', ['foo']), "foo is not defined\n";

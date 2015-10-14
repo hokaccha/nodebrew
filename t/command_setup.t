@@ -14,7 +14,7 @@ ok !-e "$nodebrew->{iojs_dir}";
 ok !-e "$nodebrew->{default_dir}";
 ok !-e "$nodebrew->{current}";
 
-like $nodebrew->run('setup'), qr/install nodebrew/;
+like $nodebrew->run('setup'), qr/Installed nodebrew/;
 
 is read_file("$nodebrew->{brew_dir}/nodebrew"), 'nodebrew source';
 ok -e "$nodebrew->{src_dir}";
