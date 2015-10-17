@@ -104,7 +104,7 @@ sub _cmd_install {
 
     print "Fetching: $tarball_url\n";
     $self->{fetcher}->download($tarball_url, $tarball_path)
-        or error_and_exit("download faild: $tarball_url");
+        or error_and_exit("download failed: $tarball_url");
 
     Nodebrew::Utils::extract_tar($tarball_path, $src_dir);
 
@@ -141,7 +141,7 @@ sub _cmd_install_binary {
 
     print "Fetching: $tarball_url\n";
     $self->{fetcher}->download($tarball_url, $tarball_path)
-        or error_and_exit("download faild: $tarball_url");
+        or error_and_exit("download failed: $tarball_url");
 
     Nodebrew::Utils::extract_tar($tarball_path, $src_dir);
 
