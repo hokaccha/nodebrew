@@ -102,7 +102,7 @@ sub _cmd_install {
     $self->clean($version);
     mkdir $src_dir;
 
-    print "fetch: $tarball_url\n";
+    print "Fetching: $tarball_url\n";
     $self->{fetcher}->download($tarball_url, $tarball_path)
         or error_and_exit("download faild: $tarball_url");
 
@@ -139,7 +139,7 @@ sub _cmd_install_binary {
     $self->clean($version);
     mkdir $src_dir;
 
-    print "fetch: $tarball_url\n";
+    print "Fetching: $tarball_url\n";
     $self->{fetcher}->download($tarball_url, $tarball_path)
         or error_and_exit("download faild: $tarball_url");
 
@@ -152,7 +152,7 @@ sub _cmd_install_binary {
 
     rename "$src_dir/$target_name", $self->get_install_dir . "/$version" or die "Error: $!";
 
-    print "Install successful\n";
+    print "Installed successfully\n";
 }
 
 sub _cmd_uninstall {
@@ -262,7 +262,7 @@ sub _cmd_unalias {
 
     if ($alias->del($key)) {
         $alias->save();
-        print "remove $key\n";
+        print "Removed $key\n";
     }
     else {
         error_and_exit("$key is not defined");
@@ -282,9 +282,9 @@ sub _cmd_setup {
 
     my $brew_dir = $self->{brew_dir};
     $brew_dir =~ s/$ENV{'HOME'}/\$HOME/;
-    print "install nodebrew in $brew_dir\n\n";
+    print "Installed nodebrew in $brew_dir\n\n";
     print "========================================\n";
-    print "Add path:\n\n";
+    print "Export a path to nodebrew:\n\n";
     print "export PATH=$brew_dir/current/bin:\$PATH\n";
     print "========================================\n";
 }
@@ -306,14 +306,14 @@ sub _cmd_clean {
     my $version = $self->normalize_version($args->[0]);
 
     $self->clean($version);
-    print "clean $version\n";
+    print "Cleaned $version\n";
 }
 
 sub _cmd_selfupdate {
     my ($self, $args) = @_;
 
     $self->fetch_nodebrew();
-    print "Update successful\n";
+    print "Updated successfully\n";
 }
 
 sub _cmd_migrate_package {
@@ -348,10 +348,10 @@ sub _cmd_migrate_package {
     }
 
     if (@success) {
-        print "\nInstall successful:\n", join( "\n", @success ), "\n\n";
+        print "\nInstalled successfully:\n", join( "\n", @success ), "\n\n";
     }
     if (@fail) {
-        print "\nInstall failed:\n", join( "\n", @fail ), "\n\n";
+        print "\nFailed installation:\n", join( "\n", @fail ), "\n\n";
     }
 }
 
@@ -467,7 +467,7 @@ sub get_tarball {
             last;
         }
         else {
-            $msg .= "\nCan not fetched: $url";
+            $msg .= "\nCan not fetch: $url";
         }
     }
 
@@ -532,7 +532,7 @@ sub get_current_version {
 sub fetch_nodebrew {
     my $self = shift;
 
-    print "fetching nodebrew...\n";
+    print "Fetching nodebrew...\n";
     my $nodebrew_source = $self->{fetcher}->fetch($self->{nodebrew_url});
     my $bash_completion = $self->{fetcher}->fetch($self->{bash_completion_url});
     my $zsh_completion = $self->{fetcher}->fetch($self->{zsh_completion_url});
