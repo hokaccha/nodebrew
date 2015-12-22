@@ -205,7 +205,11 @@ sub _cmd_ls_remote {
 
     for (@versions) {
         my ($v1, $v2, $v3) = $_ =~ m/v(\d+)\.(\d+)\.(\d+)/;
-        if (!$tmp{"$v1.$v2"}++) {
+        if ($v1 == 0 && !$tmp{"$v1.$v2"}++) {
+            print "\n\n" if $i;
+            $i = 0;
+        }
+        elsif ($v1 != 0 && !$tmp{"$v1"}++) {
             print "\n\n" if $i;
             $i = 0;
         }
