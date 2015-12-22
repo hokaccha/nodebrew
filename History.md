@@ -1,4 +1,9 @@
-0.9.2  / 2015-010-25
+0.9.3  / 2015-12-22
+====================
+
+* show versions more compactly #49 (@1000ch)
+
+0.9.2  / 2015-10-25
 ====================
 
 * Change behavior of stable keyword
