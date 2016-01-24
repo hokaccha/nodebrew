@@ -128,8 +128,8 @@ sub _cmd_install {
       system qq[
           cd "$src_dir/$target_name" &&
           CC=gcc ./configure --prefix="$install_dir/$version" $configure_opts &&
-          CC=gcc make &&
-          CC=gcc make install
+          CC=gcc gmake &&
+          CC=gcc gmake install
       ];
     } else {
       system qq[
