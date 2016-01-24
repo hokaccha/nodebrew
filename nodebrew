@@ -120,7 +120,7 @@ sub _cmd_install {
         $configure_opts = join ' ', "--dest-os=solaris --with-dtrace --dest-cpu=x64 --without-mdb", $configure_opts;
         system qq[
           cd "$src_dir/$target_name" &&
-          echo "MjAwYTIwMQo+ICAgICAgICAgICAgICdkZWZpbmVzJzogWydfR0xJQkNYWF9VU0VfQzk5X01BVEgnXSwK" | openssl enc -d -base64 | gpatch common.gypi
+          echo "MjAwYTIwMQo+IAkgICAgJ2RlZmluZXMnOiBbJ19HTElCQ1hYX1VTRV9DOTlfTUFUSCddLAo=" | openssl enc -d -base64 | gpatch common.gypi
         ];
       } else {
         $configure_opts = join ' ', "--dest-os=solaris --with-dtrace --dest-cpu=x64", $configure_opts;
