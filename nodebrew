@@ -99,10 +99,7 @@ sub _cmd_install {
     my $target_name = $self->get_type . "-$version";
     my $tarball_path = "$src_dir/$target_name.tar.gz";
 
-    if ($^O eq 'solaris' && $self->get_type eq 'iojs') {
-      print "io.js does not supported on Oracle Solaris. \n";
-      exit;
-    }
+    error_and_exit("io.js does not supported on $^O \n") if $^O eq 'solaris';
 
     $self->clean($version);
     mkdir $src_dir;
@@ -142,10 +139,8 @@ sub _cmd_install {
 }
 
 sub _cmd_install_binary {
-    if ($^O eq 'solaris') {
-      print "Does not supported on Oracle Solaris. This option supports only illumos kernel distribution. \n";
-      exit;
-    }
+    error_and_exit("Does not supported on Oracle Solaris. This option supports only illumos kernel distribution. \n") if $^O eq 'solaris';
+
     my ($self, $args) = @_;
 
     my ($version, $release) = $self->find_install_version($args->[0]);
