@@ -732,7 +732,7 @@ sub apply_vars {
     for my $key (keys %$hash) {
         my $val = $hash->{$key};
 
-        $str =~ s/#{$key}/$val/g;
+        $str =~ s/#\{$key\}/$val/g;
     }
 
     return $str;
