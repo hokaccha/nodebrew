@@ -1,0 +1,15 @@
+{
+    "remotePath": "/export/home/kazus/Gits/nodebrew",
+    "host": "192.168.100.15",
+    "username": "kazus",
+    "password": "tk-rave",
+    "port": 22,
+    "protocol": "sftp",
+    "uploadOnSave": true,
+    "passive": false,
+    "debug": false,
+    "ignore": [
+        "\\.vscode",
+        "\\.git"
+    ]
+}

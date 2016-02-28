@@ -99,7 +99,9 @@ sub _cmd_install {
     my $target_name = $self->get_type . "-$version";
     my $tarball_path = "$src_dir/$target_name.tar.gz";
 
-    error_and_exit("io.js does not supported on $^O \n") if $^O eq 'solaris';
+     if ($^O eq 'solaris' && $self->get_type eq 'iojs') {
+    error_and_exit("io.js does not supported on $^O \n");
+     }
 
     $self->clean($version);
     mkdir $src_dir;
