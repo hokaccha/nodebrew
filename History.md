@@ -1,3 +1,8 @@
+0.9.5  / 2016-03-07
+====================
+
+* Change to using protocol https on access to nodejs.org #42 (@hirose504)
+
 0.9.4  / 2016-02-19
 ====================
 
