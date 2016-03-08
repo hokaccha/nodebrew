@@ -25,6 +25,7 @@ sub new {
         nodebrew_url
         bash_completion_url
         zsh_completion_url
+        fish_completion_url
         fetcher
         remote_list_url
         tarballs
@@ -57,6 +58,7 @@ sub init {
     $self->{alias_file} = $self->{brew_dir} . '/alias';
     $self->{bash_completion_dir} = $self->{brew_dir} . '/completions/bash';
     $self->{zsh_completion_dir} = $self->{brew_dir} . '/completions/zsh';
+    $self->{fish_completion_dir} = $self->{brew_dir} . '/completions/fish';
 }
 
 sub run {
@@ -540,16 +542,20 @@ sub fetch_nodebrew {
     my $nodebrew_source = $self->{fetcher}->fetch($self->{nodebrew_url});
     my $bash_completion = $self->{fetcher}->fetch($self->{bash_completion_url});
     my $zsh_completion = $self->{fetcher}->fetch($self->{zsh_completion_url});
+    my $fish_completion = $self->{fetcher}->fetch($self->{fish_completion_url});
     my $nodebrew_path = "$self->{brew_dir}/nodebrew";
     my $bash_completion_path = $self->{bash_completion_dir} . '/' . basename($self->{bash_completion_url});
     my $zsh_completion_path = $self->{zsh_completion_dir} . '/' . basename($self->{zsh_completion_url});
+    my $fish_completion_path = $self->{fish_completion_dir} . '/' . basename($self->{fish_completion_url});
 
     mkpath $self->{bash_completion_dir} unless -e $self->{bash_completion_dir};
     mkpath $self->{zsh_completion_dir} unless -e $self->{zsh_completion_dir};
+    mkpath $self->{fish_completion_dir} unless -e $self->{fish_completion_dir};
 
     $self->make_file($nodebrew_source, $nodebrew_path);
     $self->make_file($bash_completion, $bash_completion_path);
     $self->make_file($zsh_completion, $zsh_completion_path);
+    $self->make_file($fish_completion, $fish_completion_path);
 }
 
 sub make_file {
@@ -903,6 +909,7 @@ sub main {
     my $nodebrew_url = "${base_url}nodebrew";
     my $bash_completion_url = "${base_url}completions/bash/nodebrew-completion";
     my $zsh_completion_url = "${base_url}completions/zsh/_nodebrew";
+    my $fish_completion_url = "${base_url}completions/fish/nodebrew.fish";
     my $fetcher_type = `which curl` ? 'curl' :
                        `which wget` ? 'wget' :
                         die 'Need curl or wget';
@@ -913,6 +920,7 @@ sub main {
         nodebrew_url    => $nodebrew_url,
         bash_completion_url => $bash_completion_url,
         zsh_completion_url  => $zsh_completion_url,
+        fish_completion_url => $fish_completion_url,
         fetcher         => Nodebrew::Fetcher::get($fetcher_type),
         remote_list_url => {
             node => 'https://nodejs.org/dist/',
