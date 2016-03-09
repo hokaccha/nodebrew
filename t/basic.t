@@ -9,6 +9,7 @@ my $brew_dir = "$FindBin::Bin/.nodebrew";
 my $nodebrew_url = 'http://127.0.0.1:8000/nodebrew';
 my $bash_completion_url = 'http://127.0.0.1:8000/completions/bash/nodebrew-completion';
 my $zsh_completion_url = 'http://127.0.0.1:8000/completions/zsh/_nodebrew';
+my $fish_completion_url = 'http://127.0.0.1:8000/completions/fish/nodebrew.fish';
 my $remote_list_url = 'http://127.0.0.1:8000/list.html';
 my $fetcher = Nodebrew::Fetcher::get('curl');
 my $tarballs = [
@@ -22,6 +23,7 @@ my $nodebrew = Nodebrew->new(
     nodebrew_url => $nodebrew_url,
     bash_completion_url => $bash_completion_url,
     zsh_completion_url => $zsh_completion_url,
+    fish_completion_url => $fish_completion_url,
     remote_list_url => $remote_list_url,
     fetcher => $fetcher,
     tarballs => $tarballs,
@@ -37,6 +39,7 @@ is $nodebrew->{default_dir}, "$brew_dir/default";
 is $nodebrew->{nodebrew_url}, $nodebrew_url;
 is $nodebrew->{bash_completion_url}, $bash_completion_url;
 is $nodebrew->{zsh_completion_url}, $zsh_completion_url;
+is $nodebrew->{fish_completion_url}, $fish_completion_url;
 is $nodebrew->{remote_list_url}, $remote_list_url;
 is $nodebrew->{fetcher}, $fetcher;
 is $nodebrew->{tarballs}, $tarballs;
@@ -48,6 +51,7 @@ eval {
         nodebrew_url => $nodebrew_url,
         bash_completion_url => $bash_completion_url,
         zsh_completion_url => $zsh_completion_url,
+        fish_completion_url => $fish_completion_url,
         remote_list_url => $remote_list_url,
         fetcher => $fetcher,
     );

@@ -41,6 +41,7 @@ sub init_nodebrew {
         nodebrew_url => "$url/nodebrew",
         bash_completion_url => "$url/completions/bash/nodebrew-completion",
         zsh_completion_url => "$url/completions/zsh/_nodebrew",
+        fish_completion_url => "$url/completions/fish/nodebrew.fish",
         fetcher => Nodebrew::Fetcher::get('curl'),
         remote_list_url => {
             node => "$url/list.html",
