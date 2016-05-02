@@ -372,6 +372,7 @@ sub _cmd_exec {
     my $command = join ' ', @$args;
 
     system $command;
+    exit $? >> 8;
 }
 
 sub _cmd_help {
