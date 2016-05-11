@@ -1,3 +1,8 @@
+0.9.5  / 2016-05-11
+====================
+
+* Exec command exit with external command's exit code #56 (@hiyamamo)
+
 0.9.5  / 2016-03-07
 ====================
 
