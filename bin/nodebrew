@@ -1,0 +1,69 @@
+#!/usr/bin/env perl
+
+# nodebrew
+# Node.js version manager
+#
+# @author  Kazuhito Hokamura <k.hokamura@gmail.com>
+# @url     https://github.com/hokaccha/nodebrew
+
+use strict;
+use warnings;
+use FindBin;
+
+my $base_dir;
+BEGIN {
+    $base_dir = "$FindBin::Bin/..";
+}
+
+use FindBin;
+use lib "$base_dir/lib";
+
+use Nodebrew;
+
+use Cwd 'abs_path';
+
+sub main {
+    my $brew_dir = abs_path($ENV{'NODEBREW_ROOT'} || $ENV{'HOME'} . '/.nodebrew');
+    my $base_url = 'https://raw.githubusercontent.com/hokaccha/nodebrew/master/';
+    my $nodebrew_url = "${base_url}nodebrew";
+    my $bash_completion_url = "${base_url}completions/bash/nodebrew-completion";
+    my $zsh_completion_url = "${base_url}completions/zsh/_nodebrew";
+    my $fish_completion_url = "${base_url}completions/fish/nodebrew.fish";
+    my $fetcher_type = `which curl` ? 'curl' :
+                       `which wget` ? 'wget' :
+                        die 'Need curl or wget';
+    my ($command, $args) = Nodebrew::Utils::parse_args(@ARGV);
+
+    Nodebrew->new(
+        brew_dir        => $brew_dir,
+        nodebrew_url    => $nodebrew_url,
+        bash_completion_url => $bash_completion_url,
+        zsh_completion_url  => $zsh_completion_url,
+        fish_completion_url => $fish_completion_url,
+        fetcher         => Nodebrew::Fetcher::get($fetcher_type),
+        remote_list_url => {
+            node => 'https://nodejs.org/dist/',
+            iojs => 'https://iojs.org/download/#{release}/',
+        },
+        tarballs => {
+            node => [
+                "https://nodejs.org/dist/#{version}/node-#{version}.tar.gz",
+                "https://nodejs.org/dist/node-#{version}.tar.gz",
+            ],
+            iojs => [
+                "https://iojs.org/download/#{release}/#{version}/iojs-#{version}.tar.gz",
+            ],
+        },
+        tarballs_binary => {
+            node => [
+                "https://nodejs.org/dist/#{version}/node-#{version}-#{platform}-#{arch}.tar.gz",
+            ],
+            iojs => [
+                "https://iojs.org/download/#{release}/#{version}/iojs-#{version}-#{platform}-#{arch}.tar.gz",
+            ],
+        },
+        iojs => 0,
+    )->run($command, $args);
+}
+
+main() unless caller;
