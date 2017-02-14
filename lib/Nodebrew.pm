@@ -10,7 +10,7 @@ use FindBin;
 
 my $base_dir;
 BEGIN {
-    $base_dir = "$FindBin::Bin/../lib";
+    $base_dir = "$FindBin::Bin/lib";
 }
 
 require "$base_dir/Nodebrew/Config/Config.pm";

@@ -12,7 +12,7 @@ use FindBin;
 
 my $base_dir;
 BEGIN {
-    $base_dir = "$FindBin::Bin/..";
+    $base_dir = $FindBin::Bin;
 }
 
 use FindBin;
