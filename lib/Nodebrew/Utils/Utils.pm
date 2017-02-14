@@ -104,4 +104,27 @@ sub extract_tar {
     chdir($cwd);
 }
 
+sub normalize_version {
+    my ($self, $v) = @_;
+
+    error_and_exit('version is required') unless $v;
+
+    if ($self->is_node) {
+        $self->{iojs} = $v =~ s/^io@//;
+    }
+
+    return $v =~ m/^\d+\.?(\d+|x)?\.?(\d+|x)?$/ ? "v$v" : $v;
+}
+
+sub get_install_dir {
+    my ($self, $type) = @_;
+
+    my $is_iojs = ($type && $type eq 'iojs') || $self->is_iojs;
+    my $dir = $is_iojs ? $self->{iojs_dir} : $self->{node_dir};
+
+    mkdir $dir unless -e $dir;
+
+    return $dir;
+}
+
 1;

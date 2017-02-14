@@ -80,7 +80,7 @@ sub _cmd_use {
     my ($self, $args) = @_;
 
     my $version = $self->find_available_version($args->[0]);
-    my $target = $self->get_install_dir . "/$version";
+    my $target = Nodebrew::Utils::get_install_dir() . "/$version";
     my $nodebrew_path = "$target/bin/nodebrew";
 
     unlink $self->{current} if -l $self->{current};
@@ -111,7 +111,7 @@ sub _cmd_install {
 
     Nodebrew::Utils::extract_tar($tarball_path, $src_dir);
 
-    my $install_dir = $self->get_install_dir;
+    my $install_dir = Nodebrew::Utils::get_install_dir();
     system qq[
         cd "$src_dir/$target_name" &&
         ./configure --prefix="$install_dir/$version" $configure_opts &&
@@ -153,15 +153,15 @@ sub _cmd_install_binary {
         $target_name =~ s/x86$/ia32/;
     }
 
-    rename "$src_dir/$target_name", $self->get_install_dir . "/$version" or die "Error: $!";
+    rename "$src_dir/$target_name", Nodebrew::Utils::get_install_dir() . "/$version" or die "Error: $!";
 
     print "Installed successfully\n";
 }
 
 sub _cmd_uninstall {
     my ($self, $args) = @_;
-    my $version = $self->normalize_version($args->[0]);
-    my $target = $self->get_install_dir . "/$version";
+    my $version = Nodebrew::Utils::normalize_version($args->[0]);
+    my $target = Nodebrew::Utils::get_install_dir() . "/$version";
     my $current_version = $self->get_current_version();
 
     error_and_exit("$version is not installed") unless -e $target;
@@ -310,7 +310,7 @@ sub _cmd_setup_dirs {
 sub _cmd_clean {
     my ($self, $args) = @_;
 
-    my $version = $self->normalize_version($args->[0]);
+    my $version = Nodebrew::Utils::normalize_version($args->[0]);
 
     $self->clean($version);
     print "Cleaned $version\n";
@@ -335,7 +335,7 @@ sub _cmd_migrate_package {
 
     my $version = $self->find_available_version($args->[0]);
     my @target_packages = $self->get_packages($version);
-    my $package_dir = $self->get_install_dir . "/$version/lib/node_modules";
+    my $package_dir = Nodebrew::Utils::get_install_dir() . "/$version/lib/node_modules";
 
     my (@success, @fail);
     foreach my $package_name (@target_packages) {
@@ -367,7 +367,7 @@ sub _cmd_exec {
 
     my $version = $self->find_available_version(shift @$args);
 
-    $ENV{PATH} = $self->get_install_dir . "/$version/bin:$ENV{PATH}";
+    $ENV{PATH} = Nodebrew::Utils::get_install_dir() . "/$version/bin:$ENV{PATH}";
 
     shift @$args if $args->[0] eq '--';
     my $command = join ' ', @$args;
@@ -428,7 +428,7 @@ sub get_nightly {
 sub find_install_version {
     my ($self, $v) = @_;
 
-    my $version = $self->normalize_version($v);
+    my $version = Nodebrew::Utils::normalize_version($v);
     my $release;
 
     if ($version eq 'nightly' || $version eq 'next-nightly') {
@@ -441,7 +441,7 @@ sub find_install_version {
 
     error_and_exit('version not found') unless $version;
     error_and_exit("$version is already installed")
-        if -e $self->get_install_dir . "/$version";
+        if -e Nodebrew::Utils::get_install_dir . "/$version";
 
     return ($version, $release);
 }
@@ -450,7 +450,7 @@ sub find_available_version {
     my ($self, $arg) = @_;
 
     my $alias = Nodebrew::Config->new($self->{alias_file});
-    my $target_version = $self->normalize_version($alias->get($arg) || $arg);
+    my $target_version = Nodebrew::Utils::normalize_version($alias->get($arg) || $arg);
     my $local_version = $self->get_local_version();
     my $version = Nodebrew::Utils::find_version($target_version, $local_version)
         or error_and_exit("$target_version is not installed");
@@ -570,7 +570,7 @@ sub get_local_version {
     my ($self, $type) = @_;
 
     my @versions;
-    opendir my $dh, $self->get_install_dir($type) or die $!;
+    opendir my $dh, Nodebrew::Utils::get_install_dir($type) or die $!;
     while (my $dir = readdir $dh) {
         push @versions, $dir unless $dir =~ '^\.\.?$';
     }
@@ -602,16 +602,7 @@ sub get_tarballs_binary_url {
     return $self->{tarballs_binary}->{$self->get_type}
 }
 
-sub get_install_dir {
-    my ($self, $type) = @_;
 
-    my $is_iojs = ($type && $type eq 'iojs') || $self->is_iojs;
-    my $dir = $is_iojs ? $self->{iojs_dir} : $self->{node_dir};
-
-    mkdir $dir unless -e $dir;
-
-    return $dir;
-}
 
 sub get_remote_version {
     my ($self, $type, $version) = @_;
@@ -631,7 +622,7 @@ sub get_remote_version {
 sub get_packages {
     my ($self, $version, $type) = @_;
 
-    my $install_dir = $self->get_install_dir($type);
+    my $install_dir = Nodebrew::Utils::get_install_dir($type);
     my $module_dir = "$install_dir/$version/lib/node_modules";
     my @packages;
 
@@ -648,18 +639,6 @@ sub error_and_exit {
 
     print "$msg\n";
     exit 1;
-}
-
-sub normalize_version {
-    my ($self, $v) = @_;
-
-    error_and_exit('version is required') unless $v;
-
-    if ($self->is_node) {
-        $self->{iojs} = $v =~ s/^io@//;
-    }
-
-    return $v =~ m/^\d+\.?(\d+|x)?\.?(\d+|x)?$/ ? "v$v" : $v;
 }
 
 1;
