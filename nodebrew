@@ -863,7 +863,7 @@ sub new { bless {}; }
 sub fetch_able {
     my ($self, $url) = @_;
 
-    `curl -LIs "$url"` =~ m/200 OK/;
+    `curl -LIs "$url"` =~ m/200 OK|HTTP\/2 200/;
 }
 
 sub fetch {
