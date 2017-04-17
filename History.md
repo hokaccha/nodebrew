@@ -1,4 +1,9 @@
-0.9.5  / 2016-05-11
+0.9.7  / 2017-04-17
+====================
+
+* Add checking "HTTP/2 200" for curl #64 (@msfm)
+
+0.9.6  / 2016-05-11
 ====================
 
 * Exec command exit with external command's exit code #56 (@hiyamamo)
