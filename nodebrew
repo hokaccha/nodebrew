@@ -683,7 +683,15 @@ sub find_version {
     my @versions = @$versions;
 
     return undef unless scalar @versions;
-    return pop @versions if $version eq 'latest' || $version eq 'stable';
+    return pop @versions if $version eq 'latest';
+
+    if ($version eq 'stable') {
+        for (reverse @versions) {
+            my ($major) = m/^v(\d+)/;
+            return $_ if $major % 2 == 0;
+        }
+        return;
+    }
 
     my @v = map {
         $_ && $_ eq 'x' ? undef : $_
