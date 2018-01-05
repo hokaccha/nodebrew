@@ -7,3 +7,4 @@ inc/
 blib/
 pm_to_blib
 cpanfile.snapshot
+.vscode/*

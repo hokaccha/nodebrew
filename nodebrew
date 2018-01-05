@@ -101,6 +101,10 @@ sub _cmd_install {
     my $target_name = $self->get_type . "-$version";
     my $tarball_path = "$src_dir/$target_name.tar.gz";
 
+     if ($^O eq 'solaris' && $self->get_type eq 'iojs') {
+    error_and_exit("io.js does not supported on $^O \n");
+     }
+
     $self->clean($version);
     mkdir $src_dir;
 
@@ -111,15 +115,36 @@ sub _cmd_install {
     Nodebrew::Utils::extract_tar($tarball_path, $src_dir);
 
     my $install_dir = $self->get_install_dir;
-    system qq[
-        cd "$src_dir/$target_name" &&
-        ./configure --prefix="$install_dir/$version" $configure_opts &&
-        make &&
-        make install
-    ];
+
+    if ($^O eq 'solaris') {
+      if ($version =~ /^v0/) {
+        $configure_opts = join ' ', "--dest-os=solaris --with-dtrace --dest-cpu=x64 --without-mdb", $configure_opts;
+        system qq[
+          cd "$src_dir/$target_name" &&
+          echo "MjAwYTIwMQo+IAkgICAgJ2RlZmluZXMnOiBbJ19HTElCQ1hYX1VTRV9DOTlfTUFUSCddLAo=" | openssl enc -d -base64 | gpatch common.gypi
+        ];
+      } else {
+        $configure_opts = join ' ', "--dest-os=solaris --with-dtrace --dest-cpu=x64", $configure_opts;
+      }
+      system qq[
+          cd "$src_dir/$target_name" &&
+          CC=gcc ./configure --prefix="$install_dir/$version" $configure_opts &&
+          CC=gcc gmake &&
+          CC=gcc gmake install
+      ];
+    } else {
+      system qq[
+          cd "$src_dir/$target_name" &&
+          ./configure --prefix="$install_dir/$version" $configure_opts &&
+          make &&
+          make install
+      ];
+    }
 }
 
 sub _cmd_install_binary {
+    error_and_exit("Does not supported on Oracle Solaris. This option supports only illumos kernel distribution. \n") if $^O eq 'solaris';
+
     my ($self, $args) = @_;
 
     my ($version, $release) = $self->find_install_version($args->[0]);
