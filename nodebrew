@@ -893,7 +893,7 @@ sub new { bless {}; }
 sub fetch_able {
     my ($self, $url) = @_;
 
-    `wget -Sq --spider "$url" 2>&1` =~ m/200 OK/;
+    `wget -Sq --spider "$url" 2>&1` =~ m/200 OK|HTTP\/(1.1|2) 200/;
 }
 
 sub fetch {
