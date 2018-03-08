@@ -27,6 +27,5 @@ ok -e "$nodebrew->{iojs_dir}/v1.0.0";
 ok -e "$nodebrew->{iojs_dir}/v1.0.0/binary";
 ok -e "$nodebrew->{src_dir}/v1.0.0/iojs-v1.0.0-linux-x86.tar.gz";
 like $nodebrew->run('list'), qr/io\@v1.0.0/;
-#is $nodebrew->run('install-binary', ['v1.0.0']), "io\@v1.0.0 is already installed\n";
 
 done_testing;

@@ -92,36 +92,6 @@ sub _cmd_use {
 sub _cmd_install {
     my ($self, $args) = @_;
 
-    my $v = shift @$args;
-    my $configure_opts = join ' ', @$args;
-    my ($version, $release) = $self->find_install_version($v);
-    my $opts = +{ release => $release || "release" };
-    my $tarball_url = $self->get_tarball($self->get_tarballs_url, $version, $opts);
-    my $src_dir = "$self->{src_dir}/$version";
-    my $target_name = $self->get_type . "-$version";
-    my $tarball_path = "$src_dir/$target_name.tar.gz";
-
-    $self->clean($version);
-    mkdir $src_dir;
-
-    print "Fetching: $tarball_url\n";
-    $self->{fetcher}->download($tarball_url, $tarball_path)
-        or error_and_exit("download failed: $tarball_url");
-
-    Nodebrew::Utils::extract_tar($tarball_path, $src_dir);
-
-    my $install_dir = $self->get_install_dir;
-    system qq[
-        cd "$src_dir/$target_name" &&
-        ./configure --prefix="$install_dir/$version" $configure_opts &&
-        make &&
-        make install
-    ];
-}
-
-sub _cmd_install_binary {
-    my ($self, $args) = @_;
-
     my ($version, $release) = $self->find_install_version($args->[0]);
     my ($platform, $arch) = Nodebrew::Utils::system_info();
     if ($arch eq 'armv6l' && $version =~ m/v0\.\d+\.\d+/) {
@@ -155,6 +125,42 @@ sub _cmd_install_binary {
     rename "$src_dir/$target_name", $self->get_install_dir . "/$version" or die "Error: $!";
 
     print "Installed successfully\n";
+}
+
+sub _cmd_install_source {
+    my ($self, $args) = @_;
+
+    my $v = shift @$args;
+    my $configure_opts = join ' ', @$args;
+    my ($version, $release) = $self->find_install_version($v);
+    my $opts = +{ release => $release || "release" };
+    my $tarball_url = $self->get_tarball($self->get_tarballs_url, $version, $opts);
+    my $src_dir = "$self->{src_dir}/$version";
+    my $target_name = $self->get_type . "-$version";
+    my $tarball_path = "$src_dir/$target_name.tar.gz";
+
+    $self->clean($version);
+    mkdir $src_dir;
+
+    print "Fetching: $tarball_url\n";
+    $self->{fetcher}->download($tarball_url, $tarball_path)
+        or error_and_exit("download failed: $tarball_url");
+
+    Nodebrew::Utils::extract_tar($tarball_path, $src_dir);
+
+    my $install_dir = $self->get_install_dir;
+    system qq[
+        cd "$src_dir/$target_name" &&
+        ./configure --prefix="$install_dir/$version" $configure_opts &&
+        make &&
+        make install
+    ];
+}
+
+sub _cmd_install_binary {
+    my ($self, $args) = @_;
+
+    $self->_cmd_install($args);
 }
 
 sub _cmd_uninstall {
@@ -383,8 +389,9 @@ nodebrew $VERSION
 
 Usage:
     nodebrew help                         Show this message
-    nodebrew install <version>            Download and install <version> (compile from source)
-    nodebrew install-binary <version>     Download and install <version> (binary file)
+    nodebrew install <version>            Download and install <version> (binary file)
+    nodebrew install-source <version>     Download and install <version> (from source)
+    nodebrew install-binary <version>     Alias of `install`
     nodebrew uninstall <version>          Uninstall <version>
     nodebrew use <version>                Use <version>
     nodebrew list                         List installed versions

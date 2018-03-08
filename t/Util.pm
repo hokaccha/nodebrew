@@ -120,20 +120,27 @@ sub init_server {
 
 sub setup {
     mkdir $brew_dir;
-    my @install_versions = qw/
+    my @source_versions = qw/
         v0.1.1
         v0.1.2
         v0.6.0
         v0.6.1
     /;
-    for (@install_versions) {
+    my @binary_versions = qw/
+        v8.9.0
+        v8.9.4
+    /;
+
+    for (@source_versions) {
         mkdir "$data_dir/install";
         `cp -R $data_dir/node-base $data_dir/install/node-$_`;
         `cd $data_dir/install && tar -zcf node-$_.tar.gz node-$_`; 
     }
 
-    `cp -R $data_dir/node-binary-base $data_dir/install/node-v0.4.0-linux-x86`;
-    `cd $data_dir/install && tar -zcf node-v0.4.0-linux-x86.tar.gz node-v0.4.0-linux-x86`;
+    for (@binary_versions) {
+        `cp -R $data_dir/node-binary-base $data_dir/install/node-$_-linux-x86`;
+        `cd $data_dir/install && tar -zcf node-$_-linux-x86.tar.gz node-$_-linux-x86`;
+    }
 
     mkdir "$data_dir/install/release";
     `cp -R $data_dir/release/iojs-binary-base $data_dir/install/release/iojs-v1.0.0-linux-ia32`;

@@ -48,35 +48,32 @@ The default value is `$HOME/.nodebrew`.
 
 ## Usage
 
-### `nodebrew install-binary <version>`
+### `nodebrew install <version>`
 
 Install Node.js.
 
 ```bash
-$ nodebrew install-binary v0.10.29
-install ...
+$ nodebrew install v8.9.4
 
 # or
-$ nodebrew install-binary latest # latest version
-$ nodebrew install-binary stable # stable version
-$ nodebrew install-binary v0.10.x # v0.10 latest
-$ nodebrew install-binary 0.10.29  # without `v`
-$ nodebrew install-binary io@v1.0.0 # io.js
+$ nodebrew install latest # latest version
+$ nodebrew install stable # stable version
+$ nodebrew install v8.9   # v8.9 latest
+$ nodebrew install 8.9.4  # without `v`
 ```
 
-### `nodebrew install <version>`
+### `nodebrew compile <version>`
 
-We recommend you to use `install-binary` command to install.
-If you want to compile from source, you can use `install` command.
+If you want to compile from source, you can use `compile` command.
 
 ```bash
-$ nodebrew install v0.10.29
+$ nodebrew compile v8.9.4
 ```
 
 Pass configure options to Node.js.
 
 ```bash
-$ nodebrew install v0.11.14 --v8-options=--harmony
+$ nodebrew compile v8.9.4 --v8-options=--harmony
 ```
 
 ### `nodebrew use <version>`
@@ -84,15 +81,15 @@ $ nodebrew install v0.11.14 --v8-options=--harmony
 Switch a version to use.
 
 ```bash
-$ nodebrew use v0.10.29
+$ nodebrew use v8.9.4
 $ node -v
-v0.10.29
+v8.9.4
 
 # or
 $ nodebrew use latest # latest version
 $ nodebrew use stable # stable version
-$ nodebrew use v0.6.x # v0.6 latest
-$ nodebrew use 0.10.29  # without `v`
+$ nodebrew use v8.9   # v8.9 latest
+$ nodebrew use 8.9.4  # without `v`
 ```
 
 ### `nodebrew ls` or `nodebrew list`
@@ -101,10 +98,10 @@ List all installed versions.
 
 ```bash
 $ nodebrew ls
-v0.8.28
-v0.10.29
+v8.9.9
+v8.9.4
 
-current: v0.10.29
+current: v8.9.4
 ```
 
 ### `nodebrew ls-remote`
@@ -128,10 +125,10 @@ v0.0.1    v0.0.2    v0.0.3    v0.0.4    v0.0.5    v0.0.6
 ...
 
 Local:
-v0.8.28
-v0.10.29
+v8.9.0
+v8.9.4
 
-current: v0.10.29
+current: v8.9.4
 ```
 
 ### `nodebrew alias`
@@ -139,11 +136,11 @@ current: v0.10.29
 Set alias.
 
 ```bash
-$ nodebrew alias default v0.8.28
-default -> v0.8.28
+$ nodebrew alias default v8.9.4
+default -> v8.9.4
 
 $ nodebrew use default
-use v0.8.28
+use v8.9.4
 
 $ nodebrew unalias default
 remove default
@@ -154,8 +151,8 @@ remove default
 Uninstall Node.js.
 
 ```bash
-$ nodebrew uninstall v0.10.29
-v0.10.29 uninstalled
+$ nodebrew uninstall v8.9.4
+v8.9.4 uninstalled
 ```
 
 ### `nodebrew selfupdate`
@@ -171,15 +168,16 @@ $ nodebrew selfupdate
 Execute other version temporary.
 
 ```bash
-$ nodebrew exec v0.10.29 -- node app.js
+$ nodebrew exec v8.9.4 -- node app.js
 ```
 
 ## All commands
 
 ```bash
 $ nodebrew help                         Show this message
-$ nodebrew install <version>            Download and install <version> (compile from source)
-$ nodebrew install-binary <version>     Download and install <version> (binary file)
+$ nodebrew install <version>            Download and install <version> (from binary)
+$ nodebrew compile <version>            Download and install <version> (from source)
+$ nodebrew install-binary <version>     Alias of `install` (For backword compatibility)
 $ nodebrew uninstall <version>          Uninstall <version>
 $ nodebrew use <version>                Use <version>
 $ nodebrew list                         List installed versions
