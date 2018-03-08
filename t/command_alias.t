@@ -15,10 +15,12 @@ ok -e "$nodebrew->{alias_file}";
 is $nodebrew->run('alias'), "foo -> bar\n";
 
 is $nodebrew->run('alias', ['hoge', 'fuga']), "hoge -> fuga\n";
-is $nodebrew->run('alias'), "foo -> bar\nhoge -> fuga\n";
+like $nodebrew->run('alias'), qr/foo -> bar\n/;
+like $nodebrew->run('alias'), qr/hoge -> fuga\n/;
 
 is $nodebrew->run('alias', ['foo', 'baz']), "foo -> baz\n";
-is $nodebrew->run('alias'), "foo -> baz\nhoge -> fuga\n";
+like $nodebrew->run('alias'), qr/foo -> baz\n/;
+like $nodebrew->run('alias'), qr/hoge -> fuga\n/;
 
 is $nodebrew->run('alias', ['baz']), "baz is not set alias\n";
 is $nodebrew->run('alias', ['foo']), "foo -> baz\n";
@@ -32,7 +34,8 @@ $nodebrew->run('use', ['0.6']);
 like $nodebrew->run('list'), qr/current: v0.6.1/;
 
 is $nodebrew->run('unalias', ['foo']), "Removed foo\n";
-is $nodebrew->run('alias'), "0.6 -> 0.6.x\nhoge -> fuga\n";
+like $nodebrew->run('alias'), qr/0.6 -> 0.6.x\n/;
+like $nodebrew->run('alias'), qr/hoge -> fuga\n/;
 
 is $nodebrew->run('unalias', ['foo']), "foo is not defined\n";
 
