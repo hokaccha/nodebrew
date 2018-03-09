@@ -127,7 +127,13 @@ sub _cmd_install {
     print "Installed successfully\n";
 }
 
-sub _cmd_install_source {
+sub _cmd_install_binary {
+    my ($self, $args) = @_;
+
+    $self->_cmd_install($args);
+}
+
+sub _cmd_compile {
     my ($self, $args) = @_;
 
     my $v = shift @$args;
@@ -155,12 +161,6 @@ sub _cmd_install_source {
         make &&
         make install
     ];
-}
-
-sub _cmd_install_binary {
-    my ($self, $args) = @_;
-
-    $self->_cmd_install($args);
 }
 
 sub _cmd_uninstall {
@@ -389,9 +389,9 @@ nodebrew $VERSION
 
 Usage:
     nodebrew help                         Show this message
-    nodebrew install <version>            Download and install <version> (binary file)
-    nodebrew install-source <version>     Download and install <version> (from source)
-    nodebrew install-binary <version>     Alias of `install`
+    nodebrew install <version>            Download and install <version> (from binary)
+    nodebrew compile <version>            Download and install <version> (from source)
+    nodebrew install-binary <version>     Alias of `install` (For backword compatibility)
     nodebrew uninstall <version>          Uninstall <version>
     nodebrew use <version>                Use <version>
     nodebrew list                         List installed versions
@@ -406,15 +406,11 @@ Usage:
     nodebrew exec <version> -- <command>  Execute <command> using specified <version>
 
 Example:
-    # install from binary
-    nodebrew install-binary v0.10.22
+    # install
+    nodebrew install v8.9.4
 
     # use a specific version number
-    nodebrew use v0.10.22
-
-    # io.js
-    nodebrew install-binary io\@v1.0.0
-    nodebrew use io\@v1.0.0
+    nodebrew use v8.9.4
 ...
 }
 

@@ -4,13 +4,6 @@ use warnings;
 use t::Util;
 use Test::More;
 
-{
-    no warnings;
-    *Nodebrew::Utils::system_info = sub {
-        return ('linux', 'x86');
-    };
-}
-
 my $nodebrew = init_nodebrew();
 $nodebrew->run('setup');
 $nodebrew->run('install', ['v8.9.0']);

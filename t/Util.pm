@@ -15,6 +15,13 @@ use Test::MockObject::Extends;
 
 require 'nodebrew';
 
+{
+    no warnings;
+    *Nodebrew::Utils::system_info = sub {
+        return ('linux', 'x86');
+    };
+}
+
 our @EXPORT = qw/init_nodebrew $data_dir $brew_dir/;
 
 our $data_dir = "$FindBin::Bin/data";
@@ -121,12 +128,12 @@ sub init_server {
 sub setup {
     mkdir $brew_dir;
     my @source_versions = qw/
-        v0.1.1
-        v0.1.2
-        v0.6.0
-        v0.6.1
+        v8.9.0
+        v8.9.4
     /;
     my @binary_versions = qw/
+        v6.2.0
+        v6.2.1
         v8.9.0
         v8.9.4
     /;
