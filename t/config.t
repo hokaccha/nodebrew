@@ -16,10 +16,12 @@ foo = bar
 hoge=fuga
 '), { foo => 'bar', hoge => 'fuga' };
 
-is Nodebrew::Config::_strigify({
+my $config = Nodebrew::Config::_strigify({
     foo => 'bar',
     hoge => 'fuga',
-}), "foo = bar\nhoge = fuga\n";
+});
+like $config, qr/foo = bar\n/;
+like $config, qr/hoge = fuga\n/;
 
 my $config_file = "$FindBin::Bin/_config";
 my $config = Nodebrew::Config->new($config_file);
