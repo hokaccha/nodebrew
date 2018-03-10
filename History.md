@@ -1,3 +1,9 @@
+1.0.0  / 2018-03-10
+====================
+
+- **Breaking change** `install` subcommand installs from binary #67
+- Add `compile` subcommand for installation from source
+
 0.9.8  / 2017-04-17
 ====================
 
