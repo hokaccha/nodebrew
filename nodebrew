@@ -732,6 +732,8 @@ sub system_info {
         $arch = 'armv6l';
     } elsif ($machine =~ m/armv7l/) {
         $arch = 'armv7l';
+    } elsif ($machine =~ m/aarch64/) {
+        $arch = 'armv7l';
     } elsif ($sysname =~ m/sunos/i) {
         # SunOS $machine => 'i86pc'. but use 64bit kernel.
         # Solaris 11 not support 32bit kernel.
