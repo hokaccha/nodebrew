@@ -177,7 +177,7 @@ $ nodebrew exec v8.9.4 -- node app.js
 $ nodebrew help                         Show this message
 $ nodebrew install <version>            Download and install <version> (from binary)
 $ nodebrew compile <version>            Download and install <version> (from source)
-$ nodebrew install-binary <version>     Alias of `install` (For backword compatibility)
+$ nodebrew install-binary <version>     Alias of `install` (For backward compatibility)
 $ nodebrew uninstall <version>          Uninstall <version>
 $ nodebrew use <version>                Use <version>
 $ nodebrew list                         List installed versions
