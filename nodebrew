@@ -723,8 +723,9 @@ sub parse_args {
 sub system_info {
     my $arch;
     my ($sysname, $machine) = (POSIX::uname)[0, 4];
+    my $os = `[ -f /etc/os-release ] && grep ^ID= /etc/os-release | cut -d'=' -f2 | tr -d '\n'`;
 
-    if  ($machine =~ m/x86_64/) {
+    if ($machine =~ m/x86_64/) {
         $arch = 'x64';
     } elsif ($machine =~ m/i\d86/) {
         $arch = 'x86';
@@ -732,8 +733,10 @@ sub system_info {
         $arch = 'armv6l';
     } elsif ($machine =~ m/armv7l/) {
         $arch = 'armv7l';
-    } elsif ($machine =~ m/aarch64/) {
+    } elsif ($os =~ m/chromeos/ & $machine =~ m/aarch64/) {
         $arch = 'armv7l';
+    } elsif ($machine =~ m/aarch64/) {
+        $arch = 'arm64';
     } elsif ($sysname =~ m/sunos/i) {
         # SunOS $machine => 'i86pc'. but use 64bit kernel.
         # Solaris 11 not support 32bit kernel.
