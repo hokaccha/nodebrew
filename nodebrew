@@ -726,6 +726,8 @@ sub system_info {
 
     if  ($machine =~ m/x86_64/) {
         $arch = 'x64';
+    } elsif ($machine =~ m/arm64/) {
+        $arch = 'arm64';
     } elsif ($machine =~ m/i\d86/) {
         $arch = 'x86';
     } elsif ($machine =~ m/armv6l/) {
