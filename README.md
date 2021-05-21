@@ -192,6 +192,14 @@ $ nodebrew migrate-package <version>    Install global NPM packages contained in
 $ nodebrew exec <version> -- <command>  Execute <command> using specified <version>
 ```
 
+## Uninstall nodebrew
+
+```
+$ rm -rf $HOME/.nodebrew
+```
+
+That's all.
+
 ## Development
 
 Install dependencies for testing.
