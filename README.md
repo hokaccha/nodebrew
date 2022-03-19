@@ -110,7 +110,7 @@ List remote versions.
 
 ```bash
 $ nodebrew ls-remote
-v0.0.1    v0.0.2    v0.0.3    v0.0.4    v0.0.5    v0.0.6    
+v0.0.1    v0.0.2    v0.0.3    v0.0.4    v0.0.5    v0.0.6
 ...
 ```
 
@@ -121,7 +121,7 @@ List installed and remote versions.
 ```bash
 $ nodebrew ls-all
 Remote:
-v0.0.1    v0.0.2    v0.0.3    v0.0.4    v0.0.5    v0.0.6    
+v0.0.1    v0.0.2    v0.0.3    v0.0.4    v0.0.5    v0.0.6
 ...
 
 Local:
@@ -190,6 +190,7 @@ $ nodebrew clean <version> | all        Remove source file
 $ nodebrew selfupdate                   Update nodebrew
 $ nodebrew migrate-package <version>    Install global NPM packages contained in <version> to current version
 $ nodebrew exec <version> -- <command>  Execute <command> using specified <version>
+$ nodebrew prune [--dry-run]            Uninstall old versions, keeping the latest version for each major version
 ```
 
 ## Uninstall nodebrew

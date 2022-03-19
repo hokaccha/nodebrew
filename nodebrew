@@ -441,7 +441,7 @@ Usage:
     nodebrew selfupdate                   Update nodebrew
     nodebrew migrate-package <version>    Install global NPM packages contained in <version> to current version
     nodebrew exec <version> -- <command>  Execute <command> using specified <version>
-    nodebrew prune                        Uninstall old versions, keeping the latest version for each major version
+    nodebrew prune [--dry-run]            Uninstall old versions, keeping the latest version for each major version
 
 Example:
     # install
