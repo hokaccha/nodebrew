@@ -194,6 +194,43 @@ sub _cmd_list {
     print "\n\ncurrent: " . $self->get_current_version() . "\n";
 }
 
+sub _cmd_prune {
+    my ($self, $args) = @_;
+
+    my $dry_run = grep { $_ eq '--dry-run' } @$args;
+
+    my @node_versions = @{$self->get_local_version('node')};
+    my @iojs_versions = map { "io\@$_"; } @{$self->get_local_version('iojs')};
+    my @versions;
+    push @versions, @node_versions, @iojs_versions;
+
+    my %major_map;
+    for my $version (@versions) {
+        my($variant, $major) = $version =~ m/([^@]+@)?(v\d+)/;
+        $variant ||= "";
+        push @{$major_map{"$variant$major"} ||= []}, $version;
+    }
+
+    my @keeping;
+    my @removing;
+    for my $major (@{Nodebrew::Utils::sort_version([keys %major_map])}) {
+        my @vers = @{Nodebrew::Utils::sort_version($major_map{$major})};
+        my $latest_ver = pop @vers;
+        push @keeping, $latest_ver;
+        push @removing, @vers;
+
+        print "$major:\n";
+        print "  keeping: $latest_ver\n";
+        print "  removing: [" . join(", ", @vers) . "]\n";
+    }
+
+    if (!$dry_run) {
+        for my $version (@removing) {
+            $self->_cmd_uninstall([$version]);
+        }
+    }
+}
+
 sub _cmd_ls {
     my ($self, $args) = @_;
 
@@ -404,6 +441,7 @@ Usage:
     nodebrew selfupdate                   Update nodebrew
     nodebrew migrate-package <version>    Install global NPM packages contained in <version> to current version
     nodebrew exec <version> -- <command>  Execute <command> using specified <version>
+    nodebrew prune [--dry-run]            Uninstall old versions, keeping the latest version for each major version
 
 Example:
     # install
@@ -673,9 +711,11 @@ sub sort_version {
     my $version = shift;
 
     return [sort {
-        my ($a1, $a2, $a3) = ($a =~ m/v(\d+)\.(\d+)\.(\d+)/);
-        my ($b1, $b2, $b3) = ($b =~ m/v(\d+)\.(\d+)\.(\d+)/);
-        $a1 <=> $b1 || $a2 <=> $b2 || $a3 <=> $b3
+        my ($a0, $a1, $a2, $a3) = ($a =~ m/([^@]+@)?v(\d+)(?:\.(\d+)\.(\d+))?/);
+        my ($b0, $b1, $b2, $b3) = ($b =~ m/([^@]+@)?v(\d+)(?:\.(\d+)\.(\d+))?/);
+        $a0 ||= ""; $a1 ||= 0; $a2 ||= 0; $a3 ||= 0;
+        $b0 ||= ""; $b1 ||= 0; $b2 ||= 0; $b3 ||= 0;
+        $a0 cmp $b0 || $a1 <=> $b1 || $a2 <=> $b2 || $a3 <=> $b3
     } @$version];
 }
 
