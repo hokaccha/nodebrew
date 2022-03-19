@@ -14,7 +14,7 @@ package Nodebrew;
 use File::Path qw/rmtree mkpath/;
 use File::Basename qw/basename/;
 
-our $VERSION = '1.1.0';
+our $VERSION = '1.2.0';
 
 sub new {
     my $class = shift;
